@@ -1,16 +1,16 @@
-import express from "express";
-import helmet from "helmet";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import compression from "compression";
-import errorMiddleware from "./middlewares/error.middleware";
-import { httpLogger } from "./utils/logger";
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import compression from 'compression';
+import errorMiddleware from './middlewares/error.middleware';
+import { httpLogger } from './utils/logger';
 
 //import * as middlewares from "./middlewares";
 //import api from "./modules";
 //import MessageResponse from "./interfaces/MessageResponse";
 
-require("dotenv").config();
+require('dotenv').config();
 
 const app = express();
 
@@ -27,7 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 // Use HTTP logger
 app.use(httpLogger);
 
-require("./modules")(app);
+require('./modules')(app);
 
 app.use(errorMiddleware);
 

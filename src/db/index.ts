@@ -1,6 +1,6 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import { AppConstant } from "../utils/app-constant";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { AppConstant } from '../utils/app-constant';
 
 const pool = new Pool({
   host: AppConstant.DB_HOST,

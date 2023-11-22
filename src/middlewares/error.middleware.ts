@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { NextFunction, Request, Response } from "express";
-import HttpException from "../exceptions/http.exception";
-import winston from "winston";
+import { NextFunction, Request, Response } from 'express';
+import HttpException from '../exceptions/http.exception';
+import winston from 'winston';
 
 const errorMiddleware = (
   error: HttpException,
@@ -10,7 +10,7 @@ const errorMiddleware = (
   _next: NextFunction
 ) => {
   const status = error.status || 500;
-  const message = error.message || "Something went wrong";
+  const message = error.message || 'Something went wrong';
 
   winston.error(error.stack);
 

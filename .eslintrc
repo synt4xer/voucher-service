@@ -15,6 +15,7 @@
     ],
     "plugins": [
         "import",
+        "prettier",
         "@typescript-eslint"
     ],
     "rules": {
@@ -33,7 +34,8 @@
                     "**/*.test.tsx"
                  ]
             }
-        ]
+        ],
+        "prettier/prettier": ["error"]
     },
     "settings": {
         "import/parsers": {

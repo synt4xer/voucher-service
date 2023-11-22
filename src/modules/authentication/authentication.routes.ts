@@ -1,5 +1,5 @@
-import express from "express";
-import AuthenticationController from "./authentication.controller";
+import express from 'express';
+import AuthenticationController from './authentication.controller';
 
 const router = express.Router();
 const controller = new AuthenticationController();
@@ -16,9 +16,9 @@ const controller = new AuthenticationController();
 //     .post('/checklist', auth.MemberCheck, GuestMiddleware.guestValidation(true), AquaController.checklist)
 
 router
-  .get("/login", controller.login)
-  .post("/register", controller.login)
-  .post("/forgot-password", controller.login)
-  .post("/reset-password", controller.login);
+  .get('/login', controller.login)
+  .post('/register', controller.login)
+  .post('/forgot-password', controller.login)
+  .post('/reset-password', controller.login);
 
 export default router;
