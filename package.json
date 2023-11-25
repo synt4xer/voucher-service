@@ -10,7 +10,7 @@
         "lint": "eslint --fix src test",
         "test": "jest",
         "typecheck": "tsc --noEmit",
-        "migrations": "yarn drizzle-kit generate:pg --schema=./src/db/schema/schema.ts"
+        "migrations": "yarn drizzle-kit generate:pg --schema=./src/db/schema/*"
     },
     "keywords": [],
     "author": "Ferrel John Fernando <f.syntaxer@gmail.com>",
