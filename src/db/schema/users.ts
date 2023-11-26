@@ -31,8 +31,8 @@ export const users = pgTable(
       nameIdx: index('name_idx').on(table.name),
       emailIdx: uniqueIndex('email_idx').on(table.email),
     };
-  }
+  },
 );
 
-export type User = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;

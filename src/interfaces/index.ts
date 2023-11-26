@@ -1,16 +1,10 @@
-import { User } from "../db/schema/users";
-import { Request } from "express";
+import { User } from '../db/schema/users';
+import { Request } from 'express';
 
-export interface APIResponseBodySuccess<T = null> {
-  success: true;
-  result: T;
-  error: null;
-}
-
-export interface APIResponseBodyFailure<T> {
-  success: false;
-  result: null;
-  error: T;
+export interface APIResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
 }
 
 export interface DataStoredInToken {

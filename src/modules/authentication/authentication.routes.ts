@@ -17,7 +17,7 @@ const controller = new AuthenticationController();
 
 router
   .get('/login', controller.login)
-  .post('/register', controller.login)
+  .post('/register', controller.register)
   .post('/forgot-password', controller.login)
   .post('/reset-password', controller.login);
 

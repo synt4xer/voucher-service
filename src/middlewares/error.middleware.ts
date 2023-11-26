@@ -7,14 +7,14 @@ const errorMiddleware = (
   error: HttpException,
   _req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';
 
   winston.error(error.stack);
 
-  res.status(status).send({
+  res.status(status).json({
     success: false,
     status,
     message,
