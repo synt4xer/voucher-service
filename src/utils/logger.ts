@@ -15,7 +15,6 @@ const format = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss A' }),
   winston.format.prettyPrint(),
   winston.format.colorize(),
-  winston.format.align(),
   winston.format.json(),
   winston.format.printf(logFormat),
 );

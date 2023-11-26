@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextFunction, Request, Response } from 'express';
 import HttpException from '../exceptions/http.exception';
-import winston from 'winston';
+import { logger } from '../utils/logger';
 
 const errorMiddleware = (
   error: HttpException,
@@ -12,7 +12,7 @@ const errorMiddleware = (
   const status = error.status || 500;
   const message = error.message || 'Something went wrong';
 
-  winston.error(error.stack);
+  logger.error(error.stack);
 
   res.status(status).json({
     success: false,

@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
-import db from '../../../db';
-import { NewUser, User, users } from '../../../db/schema/users';
+import db from '../../db';
+import { NewUser, User, users } from '../../db/schema/users';
 
 export class RegisterRepository {
   getUser = async (email: string) => db.select().from(users).where(eq(users.email, email));
