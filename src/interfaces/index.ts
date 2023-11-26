@@ -8,7 +8,7 @@ export interface APIResponse<T = any> {
 }
 
 export interface DataStoredInToken {
-  _id: string;
+  _uuid: string;
 }
 
 export interface RequestWithUser extends Request {

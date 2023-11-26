@@ -8,7 +8,9 @@ npx create-express-api --typescript --directory my-api-name
 
 Includes API Server utilities:
 
-* [morgan](https://www.npmjs.com/package/morgan)
+* [winston](https://www.npmjs.com/package/winston)
+  * Logger library for node.js
+* [express-winston](https://www.npmjs.com/package/express-winston)
   * HTTP request logger middleware for node.js
 * [helmet](https://www.npmjs.com/package/helmet)
   * Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!

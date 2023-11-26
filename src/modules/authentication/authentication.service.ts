@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { NewUser } from '../../db/schema/users';
+import { createToken } from '../../utils/jwt.utils';
 import { compare, encrypt } from '../../utils/encrypt.utils';
 import { RegisterRepository } from './authentication.repository';
 import { WrongCredentialsException } from '../../exceptions/unauthorized.exception';
@@ -31,8 +32,6 @@ export class AuthService {
   // * Login
   login = async (email: string, password: string) => {
     try {
-      const token: string = '';
-      const refreshToken: string = '';
       const user = await this.repository.getUser(email);
 
       if (_.isEmpty(user)) {
@@ -43,14 +42,11 @@ export class AuthService {
 
       const isPasswordMatched = await compare(password, encryptedPassword);
 
-      if (isPasswordMatched) {
-        // create token and refresh token
+      if (!isPasswordMatched) {
+        throw new WrongCredentialsException();
       }
 
-      return {
-        token,
-        refreshToken,
-      };
+      return createToken(user[0]);
     } catch (error) {
       throw error;
     }
