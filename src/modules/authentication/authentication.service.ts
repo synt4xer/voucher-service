@@ -2,15 +2,15 @@ import _ from 'lodash';
 import { NewUser } from '../../db/schema/users';
 import { createToken } from '../../utils/jwt.utils';
 import { compare, encrypt } from '../../utils/encrypt.utils';
-import { RegisterRepository } from './authentication.repository';
+import { AuthenticationRepository } from './authentication.repository';
 import { WrongCredentialsException } from '../../exceptions/unauthorized.exception';
 import UserWithThatEmailAlreadyExistsException from '../../exceptions/user-exists.exception';
 
 export class AuthService {
-  private readonly repository: RegisterRepository;
+  private readonly repository: AuthenticationRepository;
 
   constructor() {
-    this.repository = new RegisterRepository();
+    this.repository = new AuthenticationRepository();
   }
 
   // * Register

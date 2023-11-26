@@ -4,8 +4,6 @@ import AuthenticationController from './authentication.controller';
 const router = express.Router();
 const controller = new AuthenticationController();
 
-// router.use("/", auth.AuthCheck);
-
 // router
 //     .get('/ads', GuestMiddleware.guestValidation(true), AquaController.ads)
 //     .post('/save', AquaController.save)
@@ -15,10 +13,8 @@ const controller = new AuthenticationController();
 //     .get('/articleid', AquaController.article_id)
 //     .post('/checklist', auth.MemberCheck, GuestMiddleware.guestValidation(true), AquaController.checklist)
 
-router
-  .get('/login', controller.login)
-  .post('/register', controller.register)
-  .post('/forgot-password', controller.login)
-  .post('/reset-password', controller.login);
+router.get('/login', controller.login).post('/register', controller.register);
+// .post('/forgot-password', controller.login);
+// .post('/reset-password', controller.login);
 
 export default router;

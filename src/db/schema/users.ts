@@ -14,7 +14,7 @@ export const users = pgTable(
   'users',
   {
     id: serial('id').primaryKey(),
-    uuid: uuid('uuid').defaultRandom(),
+    uuid: uuid('uuid').defaultRandom().notNull(),
     name: varchar('name', { length: 256 }).notNull(),
     email: varchar('email', { length: 256 }).notNull(),
     dob: date('date_of_birth').notNull(),

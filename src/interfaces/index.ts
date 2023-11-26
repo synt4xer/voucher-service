@@ -1,5 +1,12 @@
-import { User } from '../db/schema/users';
 import { Request } from 'express';
+
+// * create my own type user for single object
+type User = {
+  uuid: string;
+  name: string;
+  email: string;
+  phone: string;
+};
 
 export interface APIResponse<T = any> {
   success: boolean;
