@@ -15,6 +15,20 @@
       "when": 1701022819227,
       "tag": "0001_redundant_adam_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1701057275842,
+      "tag": "0002_normal_nick_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1701059107468,
+      "tag": "0003_boring_professor_monster",
+      "breakpoints": true
     }
   ]
 }

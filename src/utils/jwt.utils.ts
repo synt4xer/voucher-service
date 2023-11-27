@@ -5,17 +5,20 @@ import { AppConstant } from './app-constant';
 
 const OneMinuteInSeconds = 60;
 const secret = AppConstant.JWT_SECRET!;
+const expiresIn = AppConstant.JWT_EXPIRED_TIME * OneMinuteInSeconds;
+
+export const createAccessToken = (data: DataStoredInToken) => jwt.sign(data, secret, { expiresIn });
+
+const createRefreshToken = (data: DataStoredInToken) => jwt.sign(data, secret, { expiresIn: '2d' });
 
 export const createToken = (user: User) => {
-  const expiresIn = AppConstant.JWT_EXPIRED_TIME * OneMinuteInSeconds;
-
   const data: DataStoredInToken = {
     _uuid: user.uuid!,
   };
 
   return {
-    token: jwt.sign(data, secret, { expiresIn }),
-    refreshToken: jwt.sign(data, secret, { expiresIn: '2d' }),
+    token: createAccessToken(data),
+    refreshToken: createRefreshToken(data),
   };
 };
 

@@ -1,0 +1,24 @@
+import { boolean, index, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+
+export const productCategories = pgTable(
+  'product_category',
+  {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 120 }).notNull(),
+    description: varchar('description', { length: 256 }),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    createdBy: serial('created_by').notNull(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    updatedBy: serial('updated_by').notNull(),
+    isActive: boolean('is_active').default(true),
+  },
+  (table) => {
+    return {
+      productCategoryIdIdx: index('product_category_id_idx').on(table.id),
+      nameIdx: index('category_name_idx').on(table.name),
+    };
+  },
+);
+
+export type productCategory = typeof productCategories.$inferSelect;
+export type newProductCategory = typeof productCategories.$inferInsert;

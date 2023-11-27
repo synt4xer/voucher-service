@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { NewUser } from '../../db/schema/users';
-import { createToken } from '../../utils/jwt.utils';
+import { createAccessToken, createToken, verifyToken } from '../../utils/jwt.utils';
 import { compare, encrypt } from '../../utils/encrypt.utils';
 import { AuthenticationRepository } from './authentication.repository';
 import { WrongCredentialsException } from '../../exceptions/unauthorized.exception';
@@ -47,6 +47,21 @@ export class AuthService {
       }
 
       return createToken(user[0]);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // * refresh token
+  generateAccessToken = async (refreshToken: string) => {
+    try {
+      const decoded = verifyToken(refreshToken);
+
+      // * if refresh token is valid
+      // * if not valid, it will throw error from jwt.verify() method.
+      return {
+        token: createAccessToken(decoded),
+      };
     } catch (error) {
       throw error;
     }

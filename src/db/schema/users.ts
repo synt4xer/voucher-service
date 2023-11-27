@@ -11,7 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const users = pgTable(
-  'users',
+  'user',
   {
     id: serial('id').primaryKey(),
     uuid: uuid('uuid').defaultRandom().notNull(),
@@ -28,6 +28,7 @@ export const users = pgTable(
   },
   (table) => {
     return {
+      userIdIdx: index('user_id_idx').on(table.id),
       nameIdx: index('name_idx').on(table.name),
       emailIdx: uniqueIndex('email_idx').on(table.email),
     };

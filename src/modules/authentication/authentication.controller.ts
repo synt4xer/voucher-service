@@ -36,6 +36,18 @@ class AuthenticationController {
       next(error);
     }
   };
+
+  getNewAccessToken = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const refreshToken = _.get(req, 'body.refreshToken');
+      const data = await this.service.generateAccessToken(refreshToken);
+
+      res.status(201).json({ success: true, data });
+    } catch (error) {
+      logger.error('authentication.getNewAccessToken.error', error);
+      next(error);
+    }
+  };
 }
 
 export default AuthenticationController;
