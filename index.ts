@@ -3,8 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
-import errorMiddleware from './middlewares/error.middleware';
-import { httpLogger } from './utils/logger';
+import errorMiddleware from './src/middlewares/error.middleware';
+import { httpLogger } from './src/utils/logger';
 
 require('dotenv').config();
 
@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 // Use HTTP logger
 app.use(httpLogger);
 
-require('./modules')(app);
+require('./src/modules')(app);
 
 app.use(errorMiddleware);
 

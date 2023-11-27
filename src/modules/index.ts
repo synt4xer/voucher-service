@@ -26,6 +26,11 @@ module.exports = (app: Express) => {
         const filePath = path.join(baseModulePath, file);
         const moduleRouter: Router = require(filePath).default;
 
+        // if router not ready yet
+        if (moduleRouter === undefined) {
+          continue;
+        }
+
         app.use(`/${AppConstant.API_BASE_PATH}/${base}`, moduleRouter);
       }
     }

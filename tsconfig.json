@@ -16,7 +16,12 @@
   },
   "include": [
     "./*.js",
+    "./*.ts",
     "src/**/*.ts",
     "test/**/*.ts",
   ],
+  "exclude": [
+    "./test/*",
+    "jest.config.js",
+  ]
 }
