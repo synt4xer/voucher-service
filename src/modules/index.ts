@@ -31,7 +31,7 @@ module.exports = (app: Express) => {
           continue;
         }
 
-        app.use(`/${AppConstant.API_BASE_PATH}/${base}`, moduleRouter);
+        app.use(`${AppConstant.API_BASE_PATH}/${base}`, moduleRouter);
       }
     }
   }
