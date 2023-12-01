@@ -11,3 +11,9 @@ export class ProductCategoryAlreadyExistsException extends HttpException {
     super(400, `Product Category with name ${name} already exists!`);
   }
 }
+
+export class ProductAlreadyExistsException extends HttpException {
+  constructor(name: string) {
+    super(400, `Product with name ${name} already exists!`);
+  }
+}

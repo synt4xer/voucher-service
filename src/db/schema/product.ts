@@ -6,6 +6,7 @@ import {
   pgTable,
   serial,
   timestamp,
+  uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { productCategories } from './product-category';
@@ -19,7 +20,7 @@ export const products = pgTable(
       .references(() => productCategories.id),
     name: varchar('name', { length: 256 }).notNull(),
     image: varchar('image'),
-    description: varchar('description', { length: 256 }).notNull(),
+    description: varchar('description', { length: 256 }),
     price: decimal('price').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     createdBy: serial('created_by').notNull(),
@@ -30,7 +31,7 @@ export const products = pgTable(
   (table) => {
     return {
       productIdIdx: index('product_id_idx').on(table.id),
-      nameIdx: index('product_name_idx').on(table.name),
+      nameIdx: uniqueIndex('product_name_idx').on(table.name),
     };
   },
 );
