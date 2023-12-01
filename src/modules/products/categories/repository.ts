@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import db from '../../../db';
 import {
   newProductCategory,
@@ -7,9 +7,13 @@ import {
 } from '../../../db/schema/product-category';
 
 export class ProductCategoryRepository {
-  getProductCategories = async () => db.select().from(productCategories);
+  getProductCategories = async () =>
+    db.select().from(productCategories).where(eq(productCategories.isActive, true));
   getProductCategoryById = async (id: number) =>
-    db.select().from(productCategories).where(eq(productCategories.id, id));
+    db
+      .select()
+      .from(productCategories)
+      .where(and(eq(productCategories.id, id), eq(productCategories.isActive, true)));
   getProductCategoryByName = async (name: string) =>
     db.select().from(productCategories).where(eq(productCategories.name, name));
   createProductCategory = async (productCategory: newProductCategory) =>

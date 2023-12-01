@@ -60,9 +60,9 @@ class ProductCategoriesController {
     try {
       const id = _.get(req, 'params.id');
 
-      const data = await this.service.delete(+id);
+      await this.service.delete(+id);
 
-      res.status(200).json({ success: true, data });
+      res.status(200).json({ success: true });
     } catch (error) {
       logger.error('product.categories.delete.error', error);
       next(error);
