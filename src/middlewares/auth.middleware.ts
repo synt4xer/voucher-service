@@ -17,7 +17,7 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
   }
 
   try {
-    const verify = verifyToken(authorization!);
+    const verify = verifyToken(authorization!.replace('Bearer ', ''));
     const _uuid = verify._uuid;
     const user = await userRepository.getUserByUuid(_uuid);
 
@@ -30,3 +30,5 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
     next(new WrongAuthTokenException());
   }
 };
+
+export default authMiddleware;

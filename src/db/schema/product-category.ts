@@ -1,4 +1,12 @@
-import { boolean, index, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  index,
+  pgTable,
+  serial,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export const productCategories = pgTable(
   'product_category',
@@ -15,7 +23,7 @@ export const productCategories = pgTable(
   (table) => {
     return {
       productCategoryIdIdx: index('product_category_id_idx').on(table.id),
-      nameIdx: index('category_name_idx').on(table.name),
+      nameIdx: uniqueIndex('category_name_idx').on(table.name),
     };
   },
 );
