@@ -19,7 +19,7 @@ export class ProductCategoryService {
     try {
       const existingCategory = await this.repository.getProductCategoryByName(productCategory.name);
 
-      if (_.isEmpty(existingCategory)) {
+      if (!_.isEmpty(existingCategory)) {
         throw new ProductCategoryAlreadyExistsException(productCategory.name);
       }
 
@@ -35,7 +35,6 @@ export class ProductCategoryService {
   delete = async (id: number) => {
     try {
       await this.repository.softDeleteProductCategory(id);
-      return true;
     } catch (error) {
       throw error;
     }
