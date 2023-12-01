@@ -15,7 +15,10 @@ export class ProductCategoryRepository {
       .from(productCategories)
       .where(and(eq(productCategories.id, id), eq(productCategories.isActive, true)));
   getProductCategoryByName = async (name: string) =>
-    db.select().from(productCategories).where(eq(productCategories.name, name));
+    db
+      .select()
+      .from(productCategories)
+      .where(and(eq(productCategories.name, name), eq(productCategories.isActive, true)));
   createProductCategory = async (productCategory: newProductCategory) =>
     db
       .insert(productCategories)
