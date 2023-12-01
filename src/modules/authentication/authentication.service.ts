@@ -4,7 +4,7 @@ import { createAccessToken, createToken, verifyToken } from '../../utils/jwt.uti
 import { compare, encrypt } from '../../utils/encrypt.utils';
 import { AuthenticationRepository } from './authentication.repository';
 import { WrongCredentialsException } from '../../exceptions/unauthorized.exception';
-import UserWithThatEmailAlreadyExistsException from '../../exceptions/user-exists.exception';
+import { UserEmailAlreadyExistsException } from '../../exceptions/bad-request.exception';
 
 export class AuthService {
   private readonly repository: AuthenticationRepository;
@@ -19,7 +19,7 @@ export class AuthService {
       const existedUser = await this.repository.getUser(user.email);
 
       if (!_.isEmpty(existedUser)) {
-        throw new UserWithThatEmailAlreadyExistsException(user.email);
+        throw new UserEmailAlreadyExistsException(user.email);
       }
 
       const hashedPwd = await encrypt(user.password);

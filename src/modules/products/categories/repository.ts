@@ -18,7 +18,11 @@ export class ProductCategoryRepository {
       .values(productCategory)
       .returning({ id: productCategories.id, name: productCategories.name });
   updateProductCategory = async (id: number, updateProductCategory: productCategory) =>
-    db.update(productCategories).set(updateProductCategory).where(eq(productCategories.id, id));
+    db
+      .update(productCategories)
+      .set(updateProductCategory)
+      .where(eq(productCategories.id, id))
+      .returning({ id: productCategories.id, name: productCategories.name });
   softDeleteProductCategory = async (id: number) =>
     db.update(productCategories).set({ isActive: false }).where(eq(productCategories.id, id));
 }

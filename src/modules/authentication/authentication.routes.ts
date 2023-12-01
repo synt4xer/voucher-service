@@ -13,7 +13,7 @@ const controller = new AuthenticationController();
 //     .get('/articleid', AquaController.article_id)
 //     .post('/checklist', auth.MemberCheck, GuestMiddleware.guestValidation(true), AquaController.checklist)
 
-router.get('/login', controller.login);
+router.post('/login', controller.login);
 router.post('/register', controller.register);
 router.post('/refresh', controller.getNewAccessToken);
 // .post('/forgot-password', controller.login);
