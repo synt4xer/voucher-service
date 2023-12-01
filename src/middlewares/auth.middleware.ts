@@ -21,11 +21,13 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
     const _uuid = verify._uuid;
     const user = await userRepository.getUserByUuid(_uuid);
 
-    if (!_.isEmpty(user)) {
-      const { uuid, name, email, phone } = user[0];
-      req.user = { uuid, name, email, phone };
-      next();
+    if (_.isEmpty(user)) {
+      next(new WrongAuthTokenException());
     }
+
+    const { uuid, name, email, phone } = user[0];
+    req.user = { uuid, name, email, phone };
+    next();
   } catch (error) {
     next(new WrongAuthTokenException());
   }
