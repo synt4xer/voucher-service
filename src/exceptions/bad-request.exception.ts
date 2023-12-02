@@ -17,3 +17,9 @@ export class ProductAlreadyExistsException extends HttpException {
     super(400, `Product with name ${name} already exists!`);
   }
 }
+
+export class ProductInventoryNotFoundException extends HttpException {
+  constructor(productId: number) {
+    super(400, `Product with id ${productId} not found!`);
+  }
+}
