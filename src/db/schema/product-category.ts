@@ -28,5 +28,5 @@ export const productCategories = pgTable(
   },
 );
 
-export type productCategory = typeof productCategories.$inferSelect;
-export type newProductCategory = typeof productCategories.$inferInsert;
+export type ProductCategory = typeof productCategories.$inferSelect;
+export type NewProductCategory = typeof productCategories.$inferInsert;

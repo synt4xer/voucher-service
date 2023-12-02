@@ -1,9 +1,9 @@
 import { and, eq } from 'drizzle-orm';
 import db from '../../../db';
 import {
-  newProductCategory,
+  NewProductCategory,
   productCategories,
-  productCategory,
+  ProductCategory,
 } from '../../../db/schema/product-category';
 
 export class ProductCategoryRepository {
@@ -19,12 +19,12 @@ export class ProductCategoryRepository {
       .select()
       .from(productCategories)
       .where(and(eq(productCategories.name, name), eq(productCategories.isActive, true)));
-  createProductCategory = async (productCategory: newProductCategory) =>
+  createProductCategory = async (productCategory: NewProductCategory) =>
     db
       .insert(productCategories)
       .values(productCategory)
       .returning({ id: productCategories.id, name: productCategories.name });
-  updateProductCategory = async (id: number, updateProductCategory: productCategory) =>
+  updateProductCategory = async (id: number, updateProductCategory: ProductCategory) =>
     db
       .update(productCategories)
       .set(updateProductCategory)
