@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { ProductCategoryRepository } from './repository';
-import { newProductCategory, productCategory } from '../../../db/schema/product-category';
+import { NewProductCategory, ProductCategory } from '../../../db/schema/product-category';
 import { ProductCategoryAlreadyExistsException } from '../../../exceptions/bad-request.exception';
 
 export class ProductCategoryService {
@@ -15,7 +15,7 @@ export class ProductCategoryService {
   // * get one
   getOne = async (id: number) => this.repository.getProductCategoryById(id);
   // * create
-  create = async (productCategory: newProductCategory) => {
+  create = async (productCategory: NewProductCategory) => {
     try {
       const existingCategory = await this.repository.getProductCategoryByName(productCategory.name);
 
@@ -29,7 +29,7 @@ export class ProductCategoryService {
     }
   };
   // * update
-  update = async (productCategory: productCategory, id: number) =>
+  update = async (productCategory: ProductCategory, id: number) =>
     this.repository.updateProductCategory(id, productCategory);
   // * delete
   delete = async (id: number) => {
