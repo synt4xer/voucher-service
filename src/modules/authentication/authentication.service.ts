@@ -1,10 +1,20 @@
 import _ from 'lodash';
+import redisUtil from '../../utils/redis.util';
 import { NewUser } from '../../db/schema/users';
-import { createAccessToken, createToken, verifyToken } from '../../utils/jwt.utils';
-import { compare, encrypt } from '../../utils/encrypt.utils';
+import { AppConstant } from '../../utils/app-constant';
+import { compare, encrypt } from '../../utils/encrypt.util';
 import { AuthenticationRepository } from './authentication.repository';
-import { WrongCredentialsException } from '../../exceptions/unauthorized.exception';
+import { createToken, verifyToken, createJwtToken } from '../../utils/jwt.util';
+import {
+  WrongCredentialsException,
+  WrongResTokenException,
+} from '../../exceptions/unauthorized.exception';
 import { UserEmailAlreadyExistsException } from '../../exceptions/bad-request.exception';
+
+const OneMinuteInSeconds = 60;
+
+const expiresIn = AppConstant.JWT_EXPIRED_TIME * OneMinuteInSeconds;
+const refreshExpiresIn = 2 * 24 * 60 * OneMinuteInSeconds; // * 2 days
 
 export class AuthService {
   private readonly repository: AuthenticationRepository;
@@ -38,7 +48,7 @@ export class AuthService {
         throw new WrongCredentialsException();
       }
 
-      const { password: encryptedPassword } = user[0];
+      const { uuid, password: encryptedPassword } = user[0];
 
       const isPasswordMatched = await compare(password, encryptedPassword);
 
@@ -46,22 +56,62 @@ export class AuthService {
         throw new WrongCredentialsException();
       }
 
-      return createToken(user[0]);
+      const { token, refreshToken } = createToken(user[0]);
+
+      await Promise.all([
+        redisUtil.setValue(`${AppConstant.REDIS_AUTH_KEY}${token}`, uuid, expiresIn),
+        redisUtil.setValue(`${AppConstant.REDIS_RES_KEY}${refreshToken}`, uuid, refreshExpiresIn),
+      ]);
+
+      return { token, refreshToken };
     } catch (error) {
       throw error;
     }
   };
 
   // * refresh token
-  generateAccessToken = async (refreshToken: string) => {
+  generateAccessToken = async (resToken: string) => {
     try {
-      const decoded = verifyToken(refreshToken);
+      const isExist = redisUtil.isExists(`${AppConstant.REDIS_RES_KEY}${resToken}`);
+
+      if (!isExist) {
+        throw new WrongResTokenException();
+      }
 
       // * if refresh token is valid
       // * if not valid, it will throw error from jwt.verify() method.
+      const { _uuid } = verifyToken(resToken);
+
+      const [token, refreshToken] = await Promise.all([
+        createJwtToken(_uuid, expiresIn),
+        createJwtToken(_uuid, refreshExpiresIn),
+      ]);
+
+      // * setup redis for new key, and delete old key
+      // * old auth key expected to be expired, so we just delete the old res key
+      await Promise.all([
+        redisUtil.deleteValue(`${AppConstant.REDIS_RES_KEY}${resToken}`),
+        redisUtil.setValue(`${AppConstant.REDIS_RES_KEY}${refreshToken}`, _uuid, refreshExpiresIn),
+        redisUtil.setValue(`${AppConstant.REDIS_AUTH_KEY}${token}`, _uuid, expiresIn),
+      ]);
+
       return {
-        token: createAccessToken(decoded),
+        token,
+        refreshToken,
       };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // * logout
+  logout = async (token: string, resToken: string) => {
+    try {
+      // * delete the key and its value from redis, so it wouldn't authorized after logout
+      await Promise.all([
+        redisUtil.deleteValue(`${AppConstant.REDIS_AUTH_KEY}${token}`),
+        redisUtil.deleteValue(`${AppConstant.REDIS_RES_KEY}${resToken}`),
+      ]);
     } catch (error) {
       throw error;
     }

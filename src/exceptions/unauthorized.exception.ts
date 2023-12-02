@@ -17,3 +17,9 @@ export class WrongAuthTokenException extends HttpException {
     super(401, 'Wrong authentication token');
   }
 }
+
+export class WrongResTokenException extends HttpException {
+  constructor() {
+    super(401, 'Wrong refresh token');
+  }
+}

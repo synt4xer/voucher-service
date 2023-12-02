@@ -40,11 +40,25 @@ class AuthenticationController {
   getNewAccessToken = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const refreshToken = _.get(req, 'body.refreshToken');
+
       const data = await this.service.generateAccessToken(refreshToken);
 
       res.status(201).json({ success: true, data });
     } catch (error) {
       logger.error('authentication.getNewAccessToken.error', error);
+      next(error);
+    }
+  };
+
+  logout = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const { token, refreshToken } = _.get(req, 'body');
+
+      await this.service.logout(token, refreshToken);
+
+      res.status(200).json({ success: true });
+    } catch (error) {
+      logger.error('authentication.logout.error', error);
       next(error);
     }
   };

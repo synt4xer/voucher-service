@@ -13,4 +13,11 @@ export const AppConstant = Object.freeze({
   DB_USER: process.env.DB_USER,
   DB_PASSWORD: process.env.DB_PASSWORD,
   DB_DATABASE: process.env.DB_DATABASE,
+
+  // REDIS
+  REDIS_HOST: process.env.REDIS_HOST,
+  REDIS_PORT: Number(process.env.REDIS_PORT) || 6379,
+  REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+  REDIS_AUTH_KEY: 'AuthToken::',
+  REDIS_RES_KEY: 'ResToken::',
 });
