@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { newInventory, inventory } from '../../../db/schema/inventory';
+import { NewInventory, Inventory } from '../../../db/schema/inventory';
 import { ProductInventoryNotFoundException } from '../../../exceptions/bad-request.exception';
 import { InventoryRepository } from './repository';
 import { RequestUpdateInventory } from '../../../interfaces';

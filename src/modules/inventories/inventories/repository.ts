@@ -1,6 +1,6 @@
 import db from '../../../db';
 import { and, eq } from 'drizzle-orm';
-import { newInventory, inventory, inventories } from '../../../db/schema/inventory';
+import { NewInventory, Inventory, inventories } from '../../../db/schema/inventory';
 import { RequestUpdateInventory } from '../../../interfaces';
 
 export class InventoryRepository {
@@ -16,7 +16,7 @@ export class InventoryRepository {
       .from(inventories)
       .where(and(eq(inventories.productId, productId)))
       .limit(1);
-  addStock = async (productId: number, payload: RequestUpdateInventory, existingInventory: inventory) => {
+  addStock = async (productId: number, payload: RequestUpdateInventory, existingInventory: Inventory) => {
         const data = {
             qtyAvail: existingInventory.qtyAvail + payload.stocks,
             qtyTotal: existingInventory.qtyTotal + payload.stocks
@@ -29,7 +29,7 @@ export class InventoryRepository {
         qtyTotal: inventories.qtyTotal,
         });
     }
-  reduceStock = async (productId: number, payload: RequestUpdateInventory, existingInventory: inventory) => {
+  reduceStock = async (productId: number, payload: RequestUpdateInventory, existingInventory: Inventory) => {
         const data = {
             qtyAvail: existingInventory.qtyAvail - payload.stocks,
             qtyTotal: existingInventory.qtyTotal - payload.stocks

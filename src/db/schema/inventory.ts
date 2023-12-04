@@ -25,6 +25,6 @@ import {
     },
   );
   
-  export type inventory = typeof inventories.$inferSelect;
-  export type newInventory = typeof inventories.$inferInsert;
+  export type Inventory = typeof inventories.$inferSelect;
+  export type NewInventory = typeof inventories.$inferInsert;
   
