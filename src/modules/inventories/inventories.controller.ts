@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { logger } from '../../utils/logger';
 import { APIResponse } from '../../interfaces';
-import { InventoryService } from './inventories/service';
+import { InventoryService } from './inventories.service';
 import { NextFunction, Request, Response } from 'express';
 
 class InventoryController {
@@ -34,12 +34,11 @@ class InventoryController {
   };
   addStock = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
-        const productId = _.get(req, 'params.productId');
-        const body = _.get(req, 'body');
-        
-        const data = await this.service.updateStock({ operations: 'plus', ...body }, +productId);
-        res.status(200).json({ success: true, data });
-        
+      const productId = _.get(req, 'params.productId');
+      const body = _.get(req, 'body');
+
+      const data = await this.service.updateStock({ operations: 'plus', ...body }, +productId);
+      res.status(200).json({ success: true, data });
     } catch (error) {
       logger.error('inventory.addStock.error', error);
       next(error);
@@ -47,12 +46,11 @@ class InventoryController {
   };
   reduceStock = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
-        const productId = _.get(req, 'params.productId');
-        const body = _.get(req, 'body');
-        
-        const data = await this.service.updateStock({ operations: 'min', ...body }, +productId);
-        res.status(200).json({ success: true, data });
-        
+      const productId = _.get(req, 'params.productId');
+      const body = _.get(req, 'body');
+
+      const data = await this.service.updateStock({ operations: 'min', ...body }, +productId);
+      res.status(200).json({ success: true, data });
     } catch (error) {
       logger.error('inventory.reduceStock.error', error);
       next(error);
