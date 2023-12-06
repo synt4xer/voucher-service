@@ -1,7 +1,7 @@
 import _ from 'lodash';
+import { ProductRepository } from './repository';
 import { NewProduct, Product } from '../../../db/schema/product';
 import { ProductAlreadyExistsException } from '../../../exceptions/bad-request.exception';
-import { ProductRepository } from './repository';
 
 export class ProductService {
   private readonly repository: ProductRepository;

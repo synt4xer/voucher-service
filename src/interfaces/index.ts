@@ -27,7 +27,8 @@ export interface TokenData {
   expiresIn: number;
 }
 
-export interface RequestUpdateInventory extends Request {
+// * Inventory update payload
+export interface RequestUpdateInventory {
   stocks: number;
   operations: string;
 }

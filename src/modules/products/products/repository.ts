@@ -2,6 +2,7 @@ import db from '../../../db';
 import { and, eq } from 'drizzle-orm';
 import { productCategories } from '../../../db/schema/product-category';
 import { NewProduct, Product, products } from '../../../db/schema/product';
+import { inventories } from '../../../db/schema/inventory';
 
 // * selected column
 const selectColumn = {
@@ -44,8 +45,22 @@ export class ProductRepository {
       .select()
       .from(products)
       .where(and(eq(products.name, name), eq(products.isActive, true)));
-  createProduct = async (product: NewProduct) =>
-    db.insert(products).values(product).returning(returnedColumn);
+
+  // * transactional
+  createProduct = async (product: NewProduct) => {
+    try {
+      return await db.transaction(async (tx) => {
+        const [newProduct] = await tx.insert(products).values(product).returning(returnedColumn);
+
+        // * insert to inventory
+        await tx.insert(inventories).values({ productId: newProduct.id });
+
+        return newProduct;
+      });
+    } catch (error) {
+      throw error;
+    }
+  };
   updateProduct = async (id: number, product: Product) =>
     db.update(products).set(product).where(eq(products.id, id)).returning(returnedColumn);
   softDeleteProduct = async (id: number) =>
