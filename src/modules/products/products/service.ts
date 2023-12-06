@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { newProduct, product } from '../../../db/schema/product';
-import { ProductAlreadyExistsException } from '../../../exceptions/bad-request.exception';
 import { ProductRepository } from './repository';
+import { NewProduct, Product } from '../../../db/schema/product';
+import { ProductAlreadyExistsException } from '../../../exceptions/bad-request.exception';
 
 export class ProductService {
   private readonly repository: ProductRepository;
@@ -11,11 +11,14 @@ export class ProductService {
   }
 
   // * read
-  getAll = async () => this.repository.getProducts();
+  getAll = async () => {
+    const data = await this.repository.getProducts();
+    return _.groupBy(data, 'categoryName');
+  };
   // * get one
   getOne = async (id: number) => this.repository.getProductById(id);
   // * create
-  create = async (product: newProduct) => {
+  create = async (product: NewProduct) => {
     try {
       const existingProduct = await this.repository.getProductByName(product.name);
 
@@ -29,7 +32,7 @@ export class ProductService {
     }
   };
   // * update
-  update = async (product: product, id: number) => this.repository.updateProduct(id, product);
+  update = async (product: Product, id: number) => this.repository.updateProduct(id, product);
   // * delete
   delete = async (id: number) => {
     try {
