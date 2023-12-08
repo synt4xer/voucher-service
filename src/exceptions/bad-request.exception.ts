@@ -18,8 +18,13 @@ export class ProductAlreadyExistsException extends HttpException {
   }
 }
 
-export class ProductInventoryNotFoundException extends HttpException {
-  constructor(productId: number) {
-    super(400, `Product with id ${productId} not found!`);
+export class PaymentMethodAlreadyExistException extends HttpException {
+  constructor(code: string) {
+    super(400, `Payment method with code ${code} already exists!`);
+  }
+}
+export class ShipmentAlreadyExistException extends HttpException {
+  constructor(code: string) {
+    super(400, `Shipment with code ${code} already exists!`);
   }
 }

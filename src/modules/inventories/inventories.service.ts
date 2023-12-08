@@ -1,8 +1,7 @@
 import _ from 'lodash';
-import { NewInventory, Inventory } from '../../db/schema/inventory';
-import { ProductInventoryNotFoundException } from '../../exceptions/bad-request.exception';
 import { InventoryRepository } from './inventories.repository';
 import { RequestUpdateInventory } from '../../interfaces';
+import { ProductInventoryNotFoundException } from '../../exceptions/not-found.exception';
 
 export class InventoryService {
   private readonly repository: InventoryRepository;
