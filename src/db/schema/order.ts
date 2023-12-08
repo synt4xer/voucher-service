@@ -19,12 +19,14 @@ export const orders = pgTable(
       .references(() => users.id),
     orderNumber: varchar('order_number', { length: 16 }).notNull(),
     status: varchar('status', { length: 15 }).notNull().default('CREATED'),
+    paymentCode: varchar('payment_code', { length: 20 }).notNull(),
     total: decimal('total').notNull(),
     discountAmount: decimal('discount_amount').notNull().default('0'),
     shipmentAmount: decimal('shipment_amount').notNull().default('0'),
     grandTotal: decimal('grand_total').notNull().default('0'),
     shipmentMeta: json('shipment_meta'),
     voucherMeta: json('voucher_meta'),
+    paymentMeta: json('payment_meta'),
   },
   (table) => {
     return {
