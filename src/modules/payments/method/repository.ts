@@ -4,10 +4,21 @@ import { NewPaymentMethod, PaymentMethod, paymentMethod } from '../../../db/sche
 
 export class PaymentMethodRepository {
   getPaymentMethods = async () =>
-    db.select().from(paymentMethod).where(eq(paymentMethod.isActive, true));
+    db
+      .select({
+        code: paymentMethod.code,
+        name: paymentMethod.name,
+        isActive: paymentMethod.isActive,
+      })
+      .from(paymentMethod)
+      .where(eq(paymentMethod.isActive, true));
   getPaymentMethodByCode = async (paymentCode: string) =>
     db
-      .select()
+      .select({
+        code: paymentMethod.code,
+        name: paymentMethod.name,
+        isActive: paymentMethod.isActive,
+      })
       .from(paymentMethod)
       .where(and(eq(paymentMethod.code, paymentCode), eq(paymentMethod.isActive, true)));
   createPaymentMethod = async (createPaymentMethod: NewPaymentMethod) =>
