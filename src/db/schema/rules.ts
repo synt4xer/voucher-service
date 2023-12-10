@@ -10,8 +10,8 @@ export const rules = pgTable(
     operatorFn: varchar('operator_fn', { length: 20 }).notNull(),
     type: varchar('type', { length: 20 }).notNull(),
     value: varchar('value', { length: 256 }).notNull(),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'string' }).notNull().defaultNow(),
   },
   (table) => {
     return {
@@ -22,3 +22,8 @@ export const rules = pgTable(
 
 export type Rule = typeof rules.$inferSelect;
 export type NewRule = typeof rules.$inferInsert;
+
+export enum NODETYPE {
+  VOUCHER = 'VOUCHER',
+  PUSH_NOTIFICATION = 'PUSHNOT',
+}

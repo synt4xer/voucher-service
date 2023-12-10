@@ -1,7 +1,7 @@
 import {
   boolean,
-  decimal,
   index,
+  numeric,
   pgTable,
   serial,
   uniqueIndex,
@@ -14,7 +14,7 @@ export const shipment = pgTable(
     id: serial('id').primaryKey(),
     code: varchar('shipment_code', { length: 100 }).notNull(),
     name: varchar('shipment_name', { length: 100 }).notNull(),
-    amount: decimal('shipment_amount').notNull(),
+    amount: numeric('shipment_amount').notNull(),
     isActive: boolean('is_active').default(true),
   },
   (table) => {
