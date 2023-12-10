@@ -13,7 +13,10 @@ export class ProductService {
   // * read
   getAll = async () => {
     const data = await this.repository.getProducts();
-    return _.groupBy(data, 'categoryName');
+
+    return _.chain(data)
+      .groupBy('categoryName')
+      .map((products, category) => ({ category, products }));
   };
   // * get one
   getOne = async (id: number) => this.repository.getProductById(id);

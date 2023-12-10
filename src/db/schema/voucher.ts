@@ -3,6 +3,7 @@ import {
   decimal,
   index,
   integer,
+  numeric,
   pgTable,
   serial,
   timestamp,
@@ -10,18 +11,18 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-export const voucher = pgTable(
+export const vouchers = pgTable(
   'voucher',
   {
     id: serial('id').primaryKey(),
-    code: varchar('code', { length: 10 }).notNull(),
+    code: varchar('code', { length: 25 }).notNull(),
     effect: varchar('effect', { length: 25 }).notNull(),
-    activeFrom: timestamp('active_from').notNull(),
-    activeTo: timestamp('active_to').notNull(),
+    activeFrom: timestamp('active_from', { mode: 'string' }).notNull(),
+    activeTo: timestamp('active_to', { mode: 'string' }).notNull(),
     quota: integer('quota').notNull(),
     type: varchar('type', { length: 20 }).notNull(),
-    value: decimal('value').notNull(),
-    maxValue: decimal('max_value').notNull(),
+    value: numeric('value').notNull(),
+    maxValue: numeric('max_value').notNull(),
     tnc: varchar('tnc').notNull(),
     isActive: boolean('is_active').default(true),
   },
@@ -33,5 +34,5 @@ export const voucher = pgTable(
   },
 );
 
-export type Voucher = typeof voucher.$inferSelect;
-export type NewVoucher = typeof voucher.$inferInsert;
+export type Voucher = typeof vouchers.$inferSelect;
+export type NewVoucher = typeof vouchers.$inferInsert;

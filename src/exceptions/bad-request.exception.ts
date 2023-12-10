@@ -28,3 +28,9 @@ export class ShipmentAlreadyExistException extends HttpException {
     super(400, `Shipment with code ${code} already exists!`);
   }
 }
+
+export class VoucherAlreadyExistException extends HttpException {
+  constructor(code: string) {
+    super(400, `Voucher with code ${code} already exists!`);
+  }
+}
