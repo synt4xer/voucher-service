@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import { logger } from '../utils/logger';
 import redisUtil from '../utils/redis.util';
-import { RequestWithUser } from '../interfaces';
 import { verifyToken } from '../utils/jwt.util';
 import { NextFunction, Response } from 'express';
+import { RequestWithUser } from '../types/commons';
 import { AppConstant } from '../utils/app-constant';
 import {
   AuthTokenMissingException,

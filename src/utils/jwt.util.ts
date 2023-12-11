@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import { User } from '../db/schema/users';
-import { DataStoredInToken } from '../interfaces';
 import { AppConstant } from './app-constant';
+import { DataStoredInToken } from '../types/commons';
 
 const OneMinuteInSeconds = 60;
 const secret = AppConstant.JWT_SECRET!;

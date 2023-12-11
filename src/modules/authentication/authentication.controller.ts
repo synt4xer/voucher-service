@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { NextFunction, Request, Response } from 'express';
 import { AuthService } from './authentication.service';
-import { APIResponse } from '../../interfaces';
+import { APIResponse } from '../../types/commons';
 import { logger } from '../../utils/logger';
 
 class AuthenticationController {

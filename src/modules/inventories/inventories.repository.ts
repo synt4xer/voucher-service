@@ -1,7 +1,7 @@
 import db from '../../db';
 import { and, eq } from 'drizzle-orm';
-import { NewInventory, Inventory, inventories } from '../../db/schema/inventory';
-import { RequestUpdateInventory } from '../../interfaces';
+import { RequestUpdateInventory } from '../../types/interfaces';
+import { Inventory, inventories } from '../../db/schema/inventory';
 
 export class InventoryRepository {
   getInventories = async () => db.select().from(inventories);

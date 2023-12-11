@@ -1,8 +1,8 @@
 import _ from 'lodash';
+import { logger } from '../../utils/logger';
+import { APIResponse } from '../../types/commons';
 import { NextFunction, Request, Response } from 'express';
 import { ProductCategoryService } from './categories/service';
-import { APIResponse } from '../../interfaces';
-import { logger } from '../../utils/logger';
 
 class ProductCategoriesController {
   private readonly service: ProductCategoryService;

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { logger } from '../../utils/logger';
-import { APIResponse } from '../../interfaces';
+import { APIResponse } from '../../types/commons';
 import { VoucherService } from './vouchers.service';
 import { NextFunction, Request, Response } from 'express';
 
