@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { VoucherWithRules } from '../../interfaces';
+import { VoucherWithRules } from '../../types/interfaces';
 import { VoucherRepository } from './vouchers.repository';
 import { VoucherAlreadyExistException } from '../../exceptions/bad-request.exception';
 

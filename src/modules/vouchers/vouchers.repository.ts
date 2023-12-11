@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import db from '../../db';
-import { RulesRequest } from '../../interfaces';
+import { RulesRequest } from '../../types/interfaces';
 import { and, eq, inArray, sql } from 'drizzle-orm';
-import { NodeType, rules } from '../../db/schema/rules';
+import { rules } from '../../db/schema/rules';
 import { NewVoucher, Voucher, vouchers } from '../../db/schema/voucher';
+import { NodeType } from '../../types/commons';
 
 // * selected & returned column
 const column = {
@@ -110,6 +111,7 @@ export class VoucherRepository {
       throw error;
     }
   };
+
   updateVoucher = async (voucher: Voucher, newRules: RulesRequest[], code: string) => {
     try {
       return await db.transaction(async (tx) => {
@@ -151,6 +153,7 @@ export class VoucherRepository {
       throw error;
     }
   };
+
   softDeleteVoucher = async (code: string) =>
     db.update(vouchers).set({ isActive: false }).where(eq(vouchers.code, code));
 }

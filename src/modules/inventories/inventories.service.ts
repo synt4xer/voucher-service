@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { InventoryRepository } from './inventories.repository';
-import { RequestUpdateInventory } from '../../interfaces';
+import { RequestUpdateInventory } from '../../types/interfaces';
 import { ProductInventoryNotFoundException } from '../../exceptions/not-found.exception';
 
 export class InventoryService {
