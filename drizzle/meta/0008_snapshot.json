@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "c038380c-0848-4239-832f-50fe2e8bb489",
+  "id": "6204885b-87bb-45e2-9513-83313d6eb6e1",
   "prevId": "83ac9132-4e11-4a76-a97b-ccffcdc24881",
   "tables": {
     "inventory_detail": {
@@ -837,7 +837,7 @@
         },
         "address": {
           "name": "address",
-          "type": "varchar",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },

@@ -23,7 +23,7 @@ export const rules = pgTable(
 export type Rule = typeof rules.$inferSelect;
 export type NewRule = typeof rules.$inferInsert;
 
-export enum NODETYPE {
+export enum NodeType {
   VOUCHER = 'VOUCHER',
   PUSH_NOTIFICATION = 'PUSHNOT',
 }
