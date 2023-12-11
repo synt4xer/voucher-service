@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import db from '../../db';
-import { and, eq, inArray } from 'drizzle-orm';
 import { RulesRequest } from '../../interfaces';
-import { NODETYPE, rules } from '../../db/schema/rules';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { NodeType, rules } from '../../db/schema/rules';
 import { NewVoucher, Voucher, vouchers } from '../../db/schema/voucher';
 
 // * selected & returned column
@@ -21,14 +21,27 @@ const column = {
 
 export class VoucherRepository {
   getVouchers = async () => {
-    const getVouchersData = await db.select().from(vouchers).where(eq(vouchers.isActive, true));
+    const getVouchersData = await db
+      .select()
+      .from(vouchers)
+      .where(
+        and(
+          sql`now() between ${vouchers.activeFrom} and ${vouchers.activeTo}`,
+          eq(vouchers.isActive, true),
+        ),
+      );
+
+    // * if vouchers empty, return emtpy object
+    if (_.isEmpty(getVouchersData)) {
+      return [];
+    }
 
     const getRulesData = await db
       .select()
       .from(rules)
       .where(
         and(
-          eq(rules.nodeType, NODETYPE.VOUCHER),
+          eq(rules.nodeType, NodeType.VOUCHER),
           inArray(rules.nodeId, _.map(getVouchersData, 'id')),
         ),
       );
@@ -54,7 +67,7 @@ export class VoucherRepository {
     const getRules = await db
       .select()
       .from(rules)
-      .where(and(eq(rules.nodeType, NODETYPE.VOUCHER), eq(rules.nodeId, getVoucher.id)));
+      .where(and(eq(rules.nodeType, NodeType.VOUCHER), eq(rules.nodeId, getVoucher.id)));
 
     return {
       ...getVoucher,
@@ -109,7 +122,7 @@ export class VoucherRepository {
         // * delete all existing rules
         await tx
           .delete(rules)
-          .where(and(eq(rules.nodeType, NODETYPE.VOUCHER), eq(rules.nodeId, updatedVoucher.id)));
+          .where(and(eq(rules.nodeType, NodeType.VOUCHER), eq(rules.nodeId, updatedVoucher.id)));
 
         // * insert new rules
         const promisesRules = newRules.map((rule) => {
