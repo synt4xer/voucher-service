@@ -16,17 +16,17 @@ const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFu
   const userRepository: AuthenticationRepository = new AuthenticationRepository();
   const authorization = req.header('Authorization');
 
-  if (!authorization) {
-    next(new AuthTokenMissingException());
-  }
-
-  const authToken = authorization!.replace('Bearer ', '');
-
   try {
+    if (!authorization) {
+      throw new AuthTokenMissingException();
+    }
+
+    const authToken = authorization!.replace('Bearer ', '');
+
     const isExist = await redisUtil.isExists(`${AppConstant.REDIS_AUTH_KEY}${authToken}`);
 
     if (!isExist) {
-      next(new WrongAuthTokenException());
+      throw new WrongAuthTokenException();
     }
 
     const verify = verifyToken(authToken);
@@ -34,7 +34,7 @@ const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFu
     const user = await userRepository.getUserByUuid(_uuid);
 
     if (_.isEmpty(user)) {
-      next(new WrongAuthTokenException());
+      throw new WrongAuthTokenException();
     }
 
     const { uuid, name, email, phone } = user[0];
@@ -42,7 +42,7 @@ const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFu
     next();
   } catch (error) {
     logger.error('authMiddleware.error', error);
-    next(new WrongAuthTokenException());
+    next(error);
   }
 };
 
