@@ -26,3 +26,6 @@ export const sessions = pgTable(
     };
   },
 );
+
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;

@@ -1,6 +1,5 @@
 import {
   boolean,
-  decimal,
   index,
   integer,
   numeric,

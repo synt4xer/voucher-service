@@ -2,6 +2,7 @@ import { Request } from 'express';
 
 // * create my own type user for single object
 type User = {
+  id: number;
   uuid: string;
   name: string;
   email: string;
@@ -27,7 +28,49 @@ export interface TokenData {
   expiresIn: number;
 }
 
+export type rule = {
+  id: number | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  type: string;
+  value: string;
+  nodeType: string;
+  nodeId: number;
+  key: string;
+  operatorFn: string;
+};
+
+export type VoucherData = {
+  id: number;
+  type: string;
+  code: string;
+  effect: string;
+  activeFrom: string;
+  activeTo: string;
+  quota: number;
+  value: string;
+  maxValue: string;
+  tnc: string;
+  isActive: boolean | null;
+  rules: rule[];
+};
+
+export enum EffectType {
+  SET_DISCOUNT = 'setDiscount',
+  SET_SHIPPING_DISCOUNT = 'setShippingDiscount',
+}
+
 export enum NodeType {
   VOUCHER = 'VOUCHER',
   PUSH_NOTIFICATION = 'PUSHNOT',
+}
+
+export enum RuleOperator {
+  EQ = 'eq',
+  GT = 'gt',
+  LT = 'lt',
+  GTE = 'gte',
+  LTE = 'lte',
+  SM = 'some',
+  EV = 'every',
 }
