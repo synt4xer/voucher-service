@@ -16,7 +16,13 @@ export class AuthenticationRepository {
 
   getUserByUuid = async (uuid: string) =>
     db
-      .select({ uuid: users.uuid, name: users.name, email: users.email, phone: users.phone })
+      .select({
+        id: users.id,
+        uuid: users.uuid,
+        name: users.name,
+        email: users.email,
+        phone: users.phone,
+      })
       .from(users)
       .where(eq(users.uuid, uuid));
 }

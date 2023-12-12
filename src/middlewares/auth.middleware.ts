@@ -37,8 +37,8 @@ const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFu
       throw new WrongAuthTokenException();
     }
 
-    const { uuid, name, email, phone } = user[0];
-    req.user = { uuid, name, email, phone };
+    const { id, uuid, name, email, phone } = user[0];
+    req.user = { id, uuid, name, email, phone };
     next();
   } catch (error) {
     logger.error('authMiddleware.error', error);
