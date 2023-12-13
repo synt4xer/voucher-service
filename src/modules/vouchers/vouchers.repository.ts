@@ -1,10 +1,11 @@
 import _ from 'lodash';
 import db from '../../db';
-import { RulesRequest } from '../../types/interfaces';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { DateTime } from 'luxon';
 import { rules } from '../../db/schema/rules';
-import { NewVoucher, Voucher, vouchers } from '../../db/schema/voucher';
 import { NodeType } from '../../types/commons';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { RulesRequest } from '../../types/interfaces';
+import { NewVoucher, Voucher, vouchers } from '../../db/schema/voucher';
 
 // * selected & returned column
 const column = {
@@ -53,6 +54,41 @@ export class VoucherRepository {
       ...voucher,
       rules: groupedRules[voucher.id] || [],
     }));
+  };
+
+  getVouchersForSession = async () => {
+    const getVouchersData = await db.select().from(vouchers).where(eq(vouchers.isActive, true));
+
+    // * if vouchers empty, return emtpy object
+    if (_.isEmpty(getVouchersData)) {
+      return [];
+    }
+
+    const getRulesData = await db
+      .select()
+      .from(rules)
+      .where(
+        and(
+          eq(rules.nodeType, NodeType.VOUCHER),
+          inArray(rules.nodeId, _.map(getVouchersData, 'id')),
+        ),
+      );
+
+    const currentDate = DateTime.now();
+
+    const groupedRules = _.groupBy(getRulesData, 'nodeId');
+
+    const voucherWithRules = _.map(getVouchersData, (voucher) => ({
+      ...voucher,
+      rules: groupedRules[voucher.id] || [],
+    }));
+
+    return _.partition(voucherWithRules, (voucher) => {
+      const activeFromDate = DateTime.fromISO(voucher.activeFrom);
+      const activeToDate = DateTime.fromISO(voucher.activeTo);
+
+      return voucher.quota > 0 && currentDate >= activeFromDate && currentDate <= activeToDate;
+    });
   };
 
   getVoucherByCode = async (code: string) => {

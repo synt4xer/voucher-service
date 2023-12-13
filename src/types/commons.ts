@@ -28,6 +28,13 @@ export interface TokenData {
   expiresIn: number;
 }
 
+export type ShipmentData = {
+  code: string;
+  name: string;
+  amount: string;
+  isActive: boolean | null;
+};
+
 export type rule = {
   id: number | null;
   createdAt: string | null;

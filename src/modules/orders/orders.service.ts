@@ -13,7 +13,7 @@ import { SessionRepository } from '../core/sessions/repository';
 import { VoucherRepository } from '../vouchers/vouchers.repository';
 import { ShipmentsRepository } from '../shipments/shipments.repository';
 import { PaymentMethodRepository } from '../payments/method/repository';
-import { EffectType, RuleOperator, VoucherData } from '../../types/commons';
+import { EffectType, RuleOperator, ShipmentData, VoucherData } from '../../types/commons';
 
 export class OrderService {
   private readonly orderRepository: OrderRepository;
@@ -37,6 +37,7 @@ export class OrderService {
       const reqCarts = _.get(customerSession, 'carts');
       const reqAttrs = _.get(customerSession, 'attributes');
       const reqVouchers = _.get(customerSession, 'vouchers');
+      const reqSessionId = _.get(customerSession, 'sessionId');
 
       // * get some needed attributes
       const shipmentCode = _.get(reqAttrs, 'shipmentCode', null);
@@ -44,19 +45,30 @@ export class OrderService {
 
       // * get all available voucher, shipment, and payment method if code exists
       const [fetchVouchers, shipment, paymentMethod] = await Promise.all([
-        this.voucherRepository.getVouchers(),
+        this.voucherRepository.getVouchersForSession(),
         _.isNull(shipmentCode) ? [] : this.shipmentsRepository.getShipmentByCode(shipmentCode),
         _.isNull(paymentMethodCode)
           ? []
           : this.paymentMethodRepository.getPaymentMethodByCode(paymentMethodCode),
       ]);
 
+      const [availVoucher, unavailVoucher] = fetchVouchers;
+
       // * if carts is empty
       if (_.isEmpty(reqCarts)) {
-        const available: VoucherAttr[] = fetchVouchers.map(({ code, tnc }) => ({
-          voucherCode: code,
-          tnc,
-        }));
+        const available: VoucherAttr[] = !_.isEmpty(availVoucher)
+          ? availVoucher.map(({ code, tnc }) => ({
+              voucherCode: code,
+              tnc,
+            }))
+          : [];
+
+        const unavailable: VoucherAttr[] = !_.isEmpty(unavailVoucher)
+          ? unavailVoucher.map(({ code, tnc }) => ({
+              voucherCode: code,
+              tnc,
+            }))
+          : [];
 
         return {
           userId,
@@ -66,54 +78,40 @@ export class OrderService {
           vouchers: {
             applied: [],
             available,
-            unavailable: [],
+            unavailable,
           },
         };
       }
 
       const [vouchers, effects] = await this.doValidateVoucher(
         { carts: reqCarts, attributes: reqAttrs, vouchers: reqVouchers },
-        fetchVouchers,
+        availVoucher,
       );
 
       // * get from the request
       const attributes = { ...reqAttrs };
 
-      // * total
-      const cartTotal = reqCarts
-        .map((item) => item.qty * item.price)
-        .reduce((total, itemTotal) => total + itemTotal, 0);
-
-      // * discount
-      const discount = effects
-        .filter((item) => item.effectType === EffectType.SET_DISCOUNT)
-        .map((item) => item.value)
-        .reduce((total, discountTotal) => total + discountTotal, 0);
-
-      // * shipment discount
-      const shipmentDiscount = effects
-        .filter((item) => item.effectType === EffectType.SET_SHIPPING_DISCOUNT)
-        .map((item) => item.value)
-        .reduce((total, discountTotal) => total + discountTotal, 0);
+      // * calculate
+      const { total, discount, shipmentDiscount, shipmentAmount, grandTotal } =
+        await this.doCalculate(reqCarts, shipment, effects);
 
       // * others
-      const shipmentAmount = _.isEmpty(shipment) ? undefined : +shipment[0].amount;
       const paymentMethodName = _.isEmpty(paymentMethod) ? undefined : paymentMethod[0].name;
 
-      // * remove undefined key-value
-      _.chain(attributes)
-        .assign({
-          total: cartTotal,
-          discount,
-          shipmentCode,
-          shipmentAmount,
-          shipmentDiscount,
-          paymentMethodCode,
-          paymentMethodName,
-        })
-        .omitBy(_.isUndefined);
+      // * assign calculated amount to attributes
+      _.assign(attributes, {
+        total,
+        discount,
+        shipmentCode,
+        shipmentAmount,
+        shipmentDiscount,
+        paymentMethodCode,
+        paymentMethodName,
+        grandTotal,
+      });
 
       const data = {
+        sessionId: reqSessionId,
         userId,
         state: SessionState.OPEN,
         carts: reqCarts,
@@ -122,11 +120,11 @@ export class OrderService {
         effects,
       };
 
-      const newSessions = await this.sessionRepository.createSession(data);
+      const newSessions = await this.sessionRepository.upsertSession(data);
 
       return {
-        sessionId: newSessions[0].sessionId,
         ...data,
+        sessionId: newSessions[0].sessionId,
       };
     } catch (error) {
       throw error;
@@ -137,14 +135,30 @@ export class OrderService {
 
   private doValidateVoucher = async (
     data: { carts: CartAttr[]; attributes: Record<string, any>; vouchers: VoucherListAttr },
-    existingVouchers: VoucherData[],
+    availVouchers: VoucherData[],
   ): Promise<[vouchers: VoucherListAttr, effects: EffectAttr[]]> => {
     const effects: EffectAttr[] = [];
-    const { carts, attributes, vouchers } = data;
-    const { applied, available, unavailable } = vouchers;
+
+    const carts = _.get(data, 'carts', []);
+    const attributes = _.get(data, 'attributes');
+    const applied = _.get(data, 'vouchers.applied');
+    const available = _.get(data, 'vouchers.available');
+    const unavailable = _.get(data, 'vouchers.unavailable');
+
+    // * return early if there is no avail vouchers
+    if (_.isEmpty(availVouchers)) {
+      return [
+        {
+          applied: [],
+          available: [],
+          unavailable: [],
+        },
+        [],
+      ];
+    }
 
     // * flat the rules on voucher and add the voucherCode inside of it
-    const flattenedRules = _.chain(existingVouchers)
+    const flattenedRules = _.chain(availVouchers)
       .flatMap((voucher) =>
         voucher.rules.map((rule) => ({
           ...rule,
@@ -168,6 +182,10 @@ export class OrderService {
 
       // * check if voucher are applicable
       const isVoucherApplicable = rulesForVoucher.every((rule) => {
+        if (rule.key.startsWith('attributes.') && _.isNull(attributes)) {
+          return false;
+        }
+
         const payloadValue = rule.key.startsWith('attributes.')
           ? attributes[rule.key.split('.')[1]]
           : _.map(carts, (cart) => _.get(cart, rule.key.split('.')[1]));
@@ -215,5 +233,45 @@ export class OrderService {
       },
       effects,
     ];
+  };
+
+  private doCalculate = async (
+    carts: CartAttr[],
+    shipment: ShipmentData[],
+    effects: EffectAttr[],
+  ) => {
+    // * total
+    const cartTotal = carts
+      .map((item) => item.qty * item.price)
+      .reduce((total, itemTotal) => total + itemTotal, 0);
+
+    // * discount
+    const discount = effects
+      .filter((item) => item.effectType === EffectType.SET_DISCOUNT)
+      .map((item) => item.value)
+      .reduce((total, discountTotal) => total + discountTotal, 0);
+
+    // * shipment amount
+    const shipmentAmount = _.isEmpty(shipment) ? undefined : +shipment[0].amount;
+
+    // * shipment discount
+    const shipmentDiscount = effects
+      .filter((item) => item.effectType === EffectType.SET_SHIPPING_DISCOUNT)
+      .map((item) => item.value)
+      .reduce((total, shippingDiscountTotal) => total + shippingDiscountTotal, 0);
+
+    // * validating shipping amount with shipping discount
+    const validShippingAmount = Math.max(0, (shipmentAmount ?? 0) - shipmentDiscount);
+
+    // * grand total
+    const grandTotal = Math.max(0, cartTotal - discount + validShippingAmount);
+
+    return {
+      total: cartTotal,
+      discount,
+      shipmentDiscount,
+      shipmentAmount,
+      grandTotal,
+    };
   };
 }
