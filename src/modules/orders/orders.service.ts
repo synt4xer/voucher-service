@@ -1,0 +1,277 @@
+import _ from 'lodash';
+import {
+  CartAttr,
+  CustomerSession,
+  EffectAttr,
+  SessionState,
+  VoucherAttr,
+  VoucherListAttr,
+} from '../../types/sessions';
+import baseUtil from '../../utils/base.util';
+import { OrderRepository } from './orders.repository';
+import { SessionRepository } from '../core/sessions/repository';
+import { VoucherRepository } from '../vouchers/vouchers.repository';
+import { ShipmentsRepository } from '../shipments/shipments.repository';
+import { PaymentMethodRepository } from '../payments/method/repository';
+import { EffectType, RuleOperator, ShipmentData, VoucherData } from '../../types/commons';
+
+export class OrderService {
+  private readonly orderRepository: OrderRepository;
+  private readonly voucherRepository: VoucherRepository;
+  private readonly sessionRepository: SessionRepository;
+  private readonly shipmentsRepository: ShipmentsRepository;
+  private readonly paymentMethodRepository: PaymentMethodRepository;
+
+  constructor() {
+    this.orderRepository = new OrderRepository();
+    this.voucherRepository = new VoucherRepository();
+    this.sessionRepository = new SessionRepository();
+    this.shipmentsRepository = new ShipmentsRepository();
+    this.paymentMethodRepository = new PaymentMethodRepository();
+  }
+
+  doSession = async (customerSession: CustomerSession): Promise<CustomerSession> => {
+    try {
+      // * get payload data from customer session
+      const userId = _.get(customerSession, 'userId');
+      const reqCarts = _.get(customerSession, 'carts');
+      const reqAttrs = _.get(customerSession, 'attributes');
+      const reqVouchers = _.get(customerSession, 'vouchers');
+      const reqSessionId = _.get(customerSession, 'sessionId');
+
+      // * get some needed attributes
+      const shipmentCode = _.get(reqAttrs, 'shipmentCode', null);
+      const paymentMethodCode = _.get(reqAttrs, 'paymentMethodCode', null);
+
+      // * get all available voucher, shipment, and payment method if code exists
+      const [fetchVouchers, shipment, paymentMethod] = await Promise.all([
+        this.voucherRepository.getVouchersForSession(),
+        _.isNull(shipmentCode) ? [] : this.shipmentsRepository.getShipmentByCode(shipmentCode),
+        _.isNull(paymentMethodCode)
+          ? []
+          : this.paymentMethodRepository.getPaymentMethodByCode(paymentMethodCode),
+      ]);
+
+      const [availVoucher, unavailVoucher] = fetchVouchers;
+
+      // * if carts is empty
+      if (_.isEmpty(reqCarts)) {
+        const available: VoucherAttr[] = !_.isEmpty(availVoucher)
+          ? availVoucher.map(({ code, tnc }) => ({
+              voucherCode: code,
+              tnc,
+            }))
+          : [];
+
+        const unavailable: VoucherAttr[] = !_.isEmpty(unavailVoucher)
+          ? unavailVoucher.map(({ code, tnc }) => ({
+              voucherCode: code,
+              tnc,
+            }))
+          : [];
+
+        return {
+          userId,
+          state: SessionState.OPEN,
+          carts: [],
+          attributes: {},
+          vouchers: {
+            applied: [],
+            available,
+            unavailable,
+          },
+        };
+      }
+
+      const [vouchers, effects] = await this.doValidateVoucher(
+        { carts: reqCarts, attributes: reqAttrs, vouchers: reqVouchers },
+        availVoucher,
+      );
+
+      // * get from the request
+      const attributes = { ...reqAttrs };
+
+      // * calculate
+      const { total, discount, shipmentDiscount, shipmentAmount, grandTotal } =
+        await this.doCalculate(reqCarts, shipment, effects);
+
+      // * others
+      const paymentMethodName = _.isEmpty(paymentMethod) ? undefined : paymentMethod[0].name;
+
+      // * assign calculated amount to attributes
+      _.assign(attributes, {
+        total,
+        discount,
+        shipmentCode,
+        shipmentAmount,
+        shipmentDiscount,
+        paymentMethodCode,
+        paymentMethodName,
+        grandTotal,
+      });
+
+      const data = {
+        sessionId: reqSessionId,
+        userId,
+        state: SessionState.OPEN,
+        carts: reqCarts,
+        attributes,
+        vouchers,
+        effects,
+      };
+
+      const newSessions = await this.sessionRepository.upsertSession(data);
+
+      return {
+        ...data,
+        sessionId: newSessions[0].sessionId,
+      };
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  doCheckout = async (customerSession: CustomerSession) => {};
+
+  private doValidateVoucher = async (
+    data: { carts: CartAttr[]; attributes: Record<string, any>; vouchers: VoucherListAttr },
+    availVouchers: VoucherData[],
+  ): Promise<[vouchers: VoucherListAttr, effects: EffectAttr[]]> => {
+    const effects: EffectAttr[] = [];
+
+    const carts = _.get(data, 'carts', []);
+    const attributes = _.get(data, 'attributes');
+    const applied = _.get(data, 'vouchers.applied');
+    const available = _.get(data, 'vouchers.available');
+    const unavailable = _.get(data, 'vouchers.unavailable');
+
+    // * return early if there is no avail vouchers
+    if (_.isEmpty(availVouchers)) {
+      return [
+        {
+          applied: [],
+          available: [],
+          unavailable: [],
+        },
+        [],
+      ];
+    }
+
+    // * flat the rules on voucher and add the voucherCode inside of it
+    const flattenedRules = _.chain(availVouchers)
+      .flatMap((voucher) =>
+        voucher.rules.map((rule) => ({
+          ...rule,
+          voucherCode: voucher.code,
+          tnc: voucher.tnc,
+          effect: voucher.effect,
+          effectValue: voucher.value,
+          effectValueType: voucher.type,
+          effectMaxValue: voucher.maxValue,
+        })),
+      )
+      .keyBy('name')
+      .value();
+
+    // * make a dictionary rules based on voucherCode
+    const rulesByVoucherCode = _.groupBy(flattenedRules, 'voucherCode');
+
+    // * forward chaining algorithm
+    for (const voucherCode in rulesByVoucherCode) {
+      const rulesForVoucher = rulesByVoucherCode[voucherCode] || [];
+
+      // * check if voucher are applicable
+      const isVoucherApplicable = rulesForVoucher.every((rule) => {
+        if (rule.key.startsWith('attributes.') && _.isNull(attributes)) {
+          return false;
+        }
+
+        const payloadValue = rule.key.startsWith('attributes.')
+          ? attributes[rule.key.split('.')[1]]
+          : _.map(carts, (cart) => _.get(cart, rule.key.split('.')[1]));
+
+        const operatorFn = RuleOperator[rule.operatorFn as keyof typeof RuleOperator];
+
+        return baseUtil.checkCondition(operatorFn, payloadValue, rule.value, rule.type);
+      });
+
+      // * Find the voucher in applied, available, and unavailable by voucherCode
+      const voucherInApplied = _.find(applied, { voucherCode });
+      const voucherInAvailable = _.find(available, { voucherCode: voucherCode });
+      const voucherInUnavailable = _.find(unavailable, { voucherCode: voucherCode });
+
+      if (isVoucherApplicable) {
+        if (voucherInApplied) {
+          effects.push({
+            voucherCode,
+            effectType: EffectType[rulesForVoucher[0].effect as keyof typeof EffectType],
+            value: +rulesForVoucher[0].effectValue,
+          });
+        } else if (!voucherInApplied && !voucherInAvailable) {
+          available.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
+        }
+      } else {
+        if (voucherInApplied) {
+          _.remove(applied, { voucherCode });
+        }
+
+        if (voucherInAvailable) {
+          _.remove(available, { voucherCode });
+        }
+
+        if (!voucherInUnavailable) {
+          unavailable.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
+        }
+      }
+    }
+
+    return [
+      {
+        applied,
+        available,
+        unavailable,
+      },
+      effects,
+    ];
+  };
+
+  private doCalculate = async (
+    carts: CartAttr[],
+    shipment: ShipmentData[],
+    effects: EffectAttr[],
+  ) => {
+    // * total
+    const cartTotal = carts
+      .map((item) => item.qty * item.price)
+      .reduce((total, itemTotal) => total + itemTotal, 0);
+
+    // * discount
+    const discount = effects
+      .filter((item) => item.effectType === EffectType.SET_DISCOUNT)
+      .map((item) => item.value)
+      .reduce((total, discountTotal) => total + discountTotal, 0);
+
+    // * shipment amount
+    const shipmentAmount = _.isEmpty(shipment) ? undefined : +shipment[0].amount;
+
+    // * shipment discount
+    const shipmentDiscount = effects
+      .filter((item) => item.effectType === EffectType.SET_SHIPPING_DISCOUNT)
+      .map((item) => item.value)
+      .reduce((total, shippingDiscountTotal) => total + shippingDiscountTotal, 0);
+
+    // * validating shipping amount with shipping discount
+    const validShippingAmount = Math.max(0, (shipmentAmount ?? 0) - shipmentDiscount);
+
+    // * grand total
+    const grandTotal = Math.max(0, cartTotal - discount + validShippingAmount);
+
+    return {
+      total: cartTotal,
+      discount,
+      shipmentDiscount,
+      shipmentAmount,
+      grandTotal,
+    };
+  };
+}
