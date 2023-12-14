@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { values } from 'lodash';
 import { RuleOperator } from '../types/commons';
 
 class BaseUtil {
@@ -15,9 +15,11 @@ class BaseUtil {
       [RuleOperator.LT]: (a, b) => _.lt(Number(a), Number(b)),
       [RuleOperator.LTE]: (a, b) => _.lte(Number(a), Number(b)),
       [RuleOperator.SM]: (a, b) =>
-        _.isArray(a) && _.some((a: any) => this.checkCondition(RuleOperator.EQ, a, b, valueType)),
+        _.isArray(a) &&
+        _.some(a, (value: any) => this.checkCondition(RuleOperator.EQ, value, b, valueType)),
       [RuleOperator.EV]: (a, b) =>
-        _.isArray(a) && _.every((a: any) => this.checkCondition(RuleOperator.EQ, a, b, valueType)),
+        _.isArray(a) &&
+        _.every(a, (value: any) => this.checkCondition(RuleOperator.EQ, value, b, valueType)),
     };
 
     const operator = operators[operatorFn];
@@ -28,6 +30,18 @@ class BaseUtil {
 
     // * else condition
     return false;
+  }
+
+  stringToEnum<T extends string | number>(
+    enumObj: Record<string, T>,
+    value: string,
+  ): T | undefined {
+    const enumValues = Object.values(enumObj);
+    if (enumValues.includes(value as T)) {
+      return value as T;
+    }
+
+    return undefined;
   }
 }
 

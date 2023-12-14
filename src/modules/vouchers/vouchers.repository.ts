@@ -61,7 +61,7 @@ export class VoucherRepository {
 
     // * if vouchers empty, return emtpy object
     if (_.isEmpty(getVouchersData)) {
-      return [];
+      return [[], []];
     }
 
     const getRulesData = await db
@@ -84,8 +84,8 @@ export class VoucherRepository {
     }));
 
     return _.partition(voucherWithRules, (voucher) => {
-      const activeFromDate = DateTime.fromISO(voucher.activeFrom);
-      const activeToDate = DateTime.fromISO(voucher.activeTo);
+      const activeFromDate = DateTime.fromSQL(voucher.activeFrom);
+      const activeToDate = DateTime.fromSQL(voucher.activeTo);
 
       return voucher.quota > 0 && currentDate >= activeFromDate && currentDate <= activeToDate;
     });

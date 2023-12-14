@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
 import db from '../../db';
+import { eq } from 'drizzle-orm';
 import { NewUser, User, users } from '../../db/schema/users';
 
 export class AuthenticationRepository {
