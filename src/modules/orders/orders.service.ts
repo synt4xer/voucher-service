@@ -254,14 +254,21 @@ export class OrderService {
       }
     }
 
-    const applied = _.uniqBy(reqApplied, 'voucherCode');
-    const available = _.uniqBy(reqAvailable, 'voucherCode');
+    // * data cleansing
     const unavailable = _.chain(unavailVoucher)
       .map(({ code, tnc }) => ({
         voucherCode: code,
         tnc,
       }))
       .unionBy(reqUnavailable, 'voucherCode')
+      .value();
+    const applied = _.chain(reqApplied)
+      .differenceWith(unavailable, (apply, unavail) => apply.voucherCode === unavail.voucherCode)
+      .uniqBy('voucherCode')
+      .value();
+    const available = _.chain(reqAvailable)
+      .differenceWith(unavailable, (avail, unavail) => avail.voucherCode === unavail.voucherCode)
+      .uniqBy('voucherCode')
       .value();
 
     return [
