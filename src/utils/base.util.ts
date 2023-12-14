@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import _, { values } from 'lodash';
 import { RuleOperator } from '../types/commons';
 
 class BaseUtil {
@@ -28,6 +28,18 @@ class BaseUtil {
 
     // * else condition
     return false;
+  }
+
+  stringToEnum<T extends string | number>(
+    enumObj: Record<string, T>,
+    value: string,
+  ): T | undefined {
+    const enumValues = Object.values(enumObj);
+    if (enumValues.includes(value as T)) {
+      return value as T;
+    }
+
+    return undefined;
   }
 }
 

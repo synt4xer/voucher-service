@@ -32,25 +32,20 @@ export class OrderService {
 
   doSession = async (customerSession: CustomerSession): Promise<CustomerSession> => {
     try {
-      // * get payload data from customer session
-      const userId = _.get(customerSession, 'userId');
-      const reqCarts = _.get(customerSession, 'carts');
-      const reqAttrs = _.get(customerSession, 'attributes');
-      const reqVouchers = _.get(customerSession, 'vouchers');
-      const reqSessionId = _.get(customerSession, 'sessionId');
-
-      // * get some needed attributes
-      const shipmentCode = _.get(reqAttrs, 'shipmentCode', null);
-      const paymentMethodCode = _.get(reqAttrs, 'paymentMethodCode', null);
-
-      // * get all available voucher, shipment, and payment method if code exists
-      const [fetchVouchers, shipment, paymentMethod] = await Promise.all([
-        this.voucherRepository.getVouchersForSession(),
-        _.isNull(shipmentCode) ? [] : this.shipmentsRepository.getShipmentByCode(shipmentCode),
-        _.isNull(paymentMethodCode)
-          ? []
-          : this.paymentMethodRepository.getPaymentMethodByCode(paymentMethodCode),
-      ]);
+      // * this function get all data from customer session, extract some needed attributes,
+      // * and get all available voucher, shipment, and payment method if code exists.
+      const {
+        userId,
+        reqCarts,
+        reqAttrs,
+        reqVouchers,
+        reqSessionId,
+        fetchVouchers,
+        shipment,
+        paymentMethod,
+        shipmentCode,
+        paymentMethodCode,
+      } = await this.extractCustomerSession(customerSession);
 
       const [availVoucher, unavailVoucher] = fetchVouchers;
 
@@ -83,31 +78,36 @@ export class OrderService {
         };
       }
 
-      const [vouchers, effects] = await this.doValidateVoucher(
-        { carts: reqCarts, attributes: reqAttrs, vouchers: reqVouchers },
-        availVoucher,
-      );
-
       // * get from the request
       const attributes = { ...reqAttrs };
 
-      // * calculate
-      const { total, discount, shipmentDiscount, shipmentAmount, grandTotal } =
-        await this.doCalculate(reqCarts, shipment, effects);
-
-      // * others
       const paymentMethodName = _.isEmpty(paymentMethod) ? undefined : paymentMethod[0].name;
+
+      // * first calculation before voucher effect
+      const firstCalculation = await this.doCalculate(reqCarts, shipment, []);
 
       // * assign calculated amount to attributes
       _.assign(attributes, {
-        total,
-        discount,
+        ...firstCalculation,
         shipmentCode,
-        shipmentAmount,
-        shipmentDiscount,
         paymentMethodCode,
         paymentMethodName,
-        grandTotal,
+      });
+
+      const [vouchers, effects] = await this.doValidateVoucher(
+        { carts: reqCarts, attributes, vouchers: reqVouchers },
+        { availVoucher, unavailVoucher },
+      );
+
+      // * second calculate
+      const secondCalculation = await this.doCalculate(reqCarts, shipment, effects);
+
+      // * assign calculated amount to attributes
+      _.assign(attributes, {
+        ...secondCalculation,
+        shipmentCode,
+        paymentMethodCode,
+        paymentMethodName,
       });
 
       const data = {
@@ -135,18 +135,20 @@ export class OrderService {
 
   private doValidateVoucher = async (
     data: { carts: CartAttr[]; attributes: Record<string, any>; vouchers: VoucherListAttr },
-    availVouchers: VoucherData[],
+    dbVouchers: { availVoucher: VoucherData[]; unavailVoucher: VoucherData[] },
   ): Promise<[vouchers: VoucherListAttr, effects: EffectAttr[]]> => {
     const effects: EffectAttr[] = [];
 
-    const carts = _.get(data, 'carts', []);
+    const carts = _.get(data, 'carts');
     const attributes = _.get(data, 'attributes');
-    const applied = _.get(data, 'vouchers.applied');
-    const available = _.get(data, 'vouchers.available');
-    const unavailable = _.get(data, 'vouchers.unavailable');
+    const reqApplied: VoucherAttr[] = _.get(data, 'vouchers.applied', []);
+    const reqAvailable: VoucherAttr[] = _.get(data, 'vouchers.available', []);
+    const reqUnavailable: VoucherAttr[] = _.get(data, 'vouchers.unavailable', []);
+    const availVoucher = _.get(dbVouchers, 'availVoucher');
+    const unavailVoucher = _.get(dbVouchers, 'unavailVoucher');
 
     // * return early if there is no avail vouchers
-    if (_.isEmpty(availVouchers)) {
+    if (_.isEmpty(availVoucher) && _.isEmpty(unavailVoucher)) {
       return [
         {
           applied: [],
@@ -158,7 +160,7 @@ export class OrderService {
     }
 
     // * flat the rules on voucher and add the voucherCode inside of it
-    const flattenedRules = _.chain(availVouchers)
+    const flattenedRules = _.chain(availVoucher)
       .flatMap((voucher) =>
         voucher.rules.map((rule) => ({
           ...rule,
@@ -170,7 +172,6 @@ export class OrderService {
           effectMaxValue: voucher.maxValue,
         })),
       )
-      .keyBy('name')
       .value();
 
     // * make a dictionary rules based on voucherCode
@@ -190,40 +191,78 @@ export class OrderService {
           ? attributes[rule.key.split('.')[1]]
           : _.map(carts, (cart) => _.get(cart, rule.key.split('.')[1]));
 
-        const operatorFn = RuleOperator[rule.operatorFn as keyof typeof RuleOperator];
+        const operatorFn = _.isArray(payloadValue)
+          ? RuleOperator.EV
+          : baseUtil.stringToEnum(RuleOperator, rule.operatorFn);
 
-        return baseUtil.checkCondition(operatorFn, payloadValue, rule.value, rule.type);
+        return baseUtil.checkCondition(operatorFn!, payloadValue, rule.value, rule.type);
       });
 
       // * Find the voucher in applied, available, and unavailable by voucherCode
-      const voucherInApplied = _.find(applied, { voucherCode });
-      const voucherInAvailable = _.find(available, { voucherCode: voucherCode });
-      const voucherInUnavailable = _.find(unavailable, { voucherCode: voucherCode });
+      const voucherInApplied = _.find(reqApplied, { voucherCode });
+      const voucherInAvailable = _.find(reqAvailable, { voucherCode: voucherCode });
+      const voucherInUnavailable = _.find(reqUnavailable, { voucherCode: voucherCode });
 
       if (isVoucherApplicable) {
         if (voucherInApplied) {
+          const effectType = baseUtil.stringToEnum(EffectType, rulesForVoucher[0].effect);
+          const valueType = rulesForVoucher[0].effectValueType;
+          const effectValue = rulesForVoucher[0].effectValue;
+          const maxValue = rulesForVoucher[0].effectMaxValue;
+          const total = _.get(attributes, 'total', 0);
+          const shipmentAmount = _.get(attributes, 'shipmentAmount', 0);
+          let value = 0;
+
+          if (effectType == EffectType.SET_DISCOUNT) {
+            if (valueType == 'percentage') {
+              const amount = (+effectValue * total) / 100;
+              value = Math.min(amount, +maxValue);
+            } else {
+              // * type nominal
+              value = +effectValue;
+            }
+          } else {
+            if (valueType == 'percentage') {
+              const amount = (+effectValue * shipmentAmount) / 100;
+              value = Math.min(amount, +maxValue);
+            } else {
+              // * type nominal
+              value = +effectValue;
+            }
+          }
+
           effects.push({
             voucherCode,
-            effectType: EffectType[rulesForVoucher[0].effect as keyof typeof EffectType],
-            value: +rulesForVoucher[0].effectValue,
+            effectType: effectType!,
+            value,
           });
         } else if (!voucherInApplied && !voucherInAvailable) {
-          available.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
+          reqAvailable.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
         }
       } else {
         if (voucherInApplied) {
-          _.remove(applied, { voucherCode });
+          _.remove(reqApplied, { voucherCode });
         }
 
         if (voucherInAvailable) {
-          _.remove(available, { voucherCode });
+          _.remove(reqAvailable, { voucherCode });
         }
 
         if (!voucherInUnavailable) {
-          unavailable.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
+          reqUnavailable.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
         }
       }
     }
+
+    const applied = _.uniqBy(reqApplied, 'voucherCode');
+    const available = _.uniqBy(reqAvailable, 'voucherCode');
+    const unavailable = _.chain(unavailVoucher)
+      .map(({ code, tnc }) => ({
+        voucherCode: code,
+        tnc,
+      }))
+      .unionBy(reqUnavailable, 'voucherCode')
+      .value();
 
     return [
       {
@@ -272,6 +311,41 @@ export class OrderService {
       shipmentDiscount,
       shipmentAmount,
       grandTotal,
+    };
+  };
+
+  private extractCustomerSession = async (customerSession: CustomerSession) => {
+    // * get payload data from customer session
+    const userId = _.get(customerSession, 'userId');
+    const reqCarts = _.get(customerSession, 'carts');
+    const reqAttrs = _.get(customerSession, 'attributes');
+    const reqVouchers = _.get(customerSession, 'vouchers');
+    const reqSessionId = _.get(customerSession, 'sessionId');
+
+    // * get some needed attributes
+    const shipmentCode = _.get(reqAttrs, 'shipmentCode', null);
+    const paymentMethodCode = _.get(reqAttrs, 'paymentMethodCode', null);
+
+    // * get all available voucher, shipment, and payment method if code exists
+    const [fetchVouchers, shipment, paymentMethod] = await Promise.all([
+      this.voucherRepository.getVouchersForSession(),
+      _.isNull(shipmentCode) ? [] : this.shipmentsRepository.getShipmentByCode(shipmentCode),
+      _.isNull(paymentMethodCode)
+        ? []
+        : this.paymentMethodRepository.getPaymentMethodByCode(paymentMethodCode),
+    ]);
+
+    return {
+      userId,
+      reqCarts,
+      reqAttrs,
+      reqVouchers,
+      reqSessionId,
+      fetchVouchers,
+      shipment,
+      paymentMethod,
+      shipmentCode,
+      paymentMethodCode,
     };
   };
 }
