@@ -236,7 +236,7 @@ export class OrderService {
             effectType: effectType!,
             value,
           });
-        } else if (!voucherInApplied && !voucherInAvailable) {
+        } else if (!voucherInAvailable) {
           reqAvailable.push({ voucherCode, tnc: rulesForVoucher[0].tnc });
         }
       } else {
@@ -262,14 +262,15 @@ export class OrderService {
       }))
       .unionBy(reqUnavailable, 'voucherCode')
       .value();
+    const available = _.uniqBy(reqAvailable, 'voucherCode');
     const applied = _.chain(reqApplied)
       .differenceWith(unavailable, (apply, unavail) => apply.voucherCode === unavail.voucherCode)
       .uniqBy('voucherCode')
       .value();
-    const available = _.chain(reqAvailable)
-      .differenceWith(unavailable, (avail, unavail) => avail.voucherCode === unavail.voucherCode)
-      .uniqBy('voucherCode')
-      .value();
+    // const available = _.chain(reqAvailable)
+    //   .differenceWith(unavailable, (avail, unavail) => avail.voucherCode === unavail.voucherCode)
+    //   .uniqBy('voucherCode')
+    //   .value();
 
     return [
       {

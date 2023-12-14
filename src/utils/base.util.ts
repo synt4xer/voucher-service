@@ -15,9 +15,11 @@ class BaseUtil {
       [RuleOperator.LT]: (a, b) => _.lt(Number(a), Number(b)),
       [RuleOperator.LTE]: (a, b) => _.lte(Number(a), Number(b)),
       [RuleOperator.SM]: (a, b) =>
-        _.isArray(a) && _.some((a: any) => this.checkCondition(RuleOperator.EQ, a, b, valueType)),
+        _.isArray(a) &&
+        _.some(a, (value: any) => this.checkCondition(RuleOperator.EQ, value, b, valueType)),
       [RuleOperator.EV]: (a, b) =>
-        _.isArray(a) && _.every((a: any) => this.checkCondition(RuleOperator.EQ, a, b, valueType)),
+        _.isArray(a) &&
+        _.every(a, (value: any) => this.checkCondition(RuleOperator.EQ, value, b, valueType)),
     };
 
     const operator = operators[operatorFn];
