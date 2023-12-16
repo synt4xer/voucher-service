@@ -28,3 +28,17 @@ export interface VoucherWithRules {
   isActive?: boolean;
   rules: RulesRequest[];
 }
+
+export interface ParsedError {
+  [location: string]: {
+    [param: string]: string[];
+  };
+}
+export interface ParsedResult {
+  [location: string]: { param: string; messages: string[] }[];
+}
+
+export interface ParseValidatorResult {
+  result: ParsedResult;
+  messages: string;
+}
