@@ -6,6 +6,7 @@ import {
   pgTable,
   serial,
   uniqueIndex,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { users } from './users';
@@ -17,12 +18,13 @@ export const orders = pgTable(
     userId: integer('user_id')
       .notNull()
       .references(() => users.id),
-    orderNumber: varchar('order_number', { length: 16 }).notNull(),
+    orderNumber: uuid('order_number').defaultRandom().notNull(),
     status: varchar('status', { length: 15 }).notNull().default('CREATED'),
     paymentCode: varchar('payment_code', { length: 20 }).notNull(),
     shipmentCode: varchar('shipment_code', { length: 20 }).notNull(),
     total: numeric('total').notNull(),
-    discountAmount: numeric('discount_amount').notNull().default('0'),
+    discount: numeric('discount_amount').notNull().default('0'),
+    shipmentDiscount: numeric('shipment_discount').notNull().default('0'),
     shipmentAmount: numeric('shipment_amount').notNull().default('0'),
     grandTotal: numeric('grand_total').notNull().default('0'),
     shipmentMeta: json('shipment_meta'),

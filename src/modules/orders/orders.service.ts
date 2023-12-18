@@ -14,9 +14,11 @@ import { VoucherRepository } from '../vouchers/vouchers.repository';
 import { ShipmentsRepository } from '../shipments/shipments.repository';
 import { PaymentMethodRepository } from '../payments/method/repository';
 import { EffectType, RuleOperator, ShipmentData, VoucherData } from '../../types/commons';
+import { ProductRepository } from '../products/products/repository';
 
 export class OrderService {
   private readonly orderRepository: OrderRepository;
+  private readonly productRepository: ProductRepository;
   private readonly voucherRepository: VoucherRepository;
   private readonly sessionRepository: SessionRepository;
   private readonly shipmentsRepository: ShipmentsRepository;
@@ -24,6 +26,7 @@ export class OrderService {
 
   constructor() {
     this.orderRepository = new OrderRepository();
+    this.productRepository = new ProductRepository();
     this.voucherRepository = new VoucherRepository();
     this.sessionRepository = new SessionRepository();
     this.shipmentsRepository = new ShipmentsRepository();
@@ -84,15 +87,15 @@ export class OrderService {
       const paymentMethodName = _.isEmpty(paymentMethod) ? undefined : paymentMethod[0].name;
 
       // * first calculation before voucher effect
-      const firstCalculation = await this.doCalculate(reqCarts, shipment, []);
+      // const firstCalculation = await this.doCalculate(reqCarts, shipment, []);
 
       // * assign calculated amount to attributes
-      _.assign(attributes, {
-        ...firstCalculation,
-        shipmentCode,
-        paymentMethodCode,
-        paymentMethodName,
-      });
+      // _.assign(attributes, {
+      //   ...firstCalculation,
+      //   shipmentCode,
+      //   paymentMethodCode,
+      //   paymentMethodName,
+      // });
 
       const [vouchers, effects] = await this.doValidateVoucher(
         { carts: reqCarts, attributes, vouchers: reqVouchers },
@@ -131,7 +134,63 @@ export class OrderService {
     }
   };
 
-  doCheckout = async (customerSession: CustomerSession) => {};
+  doCheckout = async (customerSession: CustomerSession) => {
+    try {
+      // * this function get all data from customer session, extract some needed attributes,
+      // * and get all available voucher, shipment, and payment method if code exists.
+      const {
+        userId,
+        reqCarts,
+        reqAttrs,
+        reqVouchers,
+        reqSessionId,
+        fetchVouchers,
+        shipment,
+        paymentMethod,
+        shipmentCode,
+        paymentMethodCode,
+      } = await this.extractCustomerSession(customerSession);
+
+      const [availVoucher, unavailVoucher] = fetchVouchers;
+
+      // * checking carts with current product condition
+      const { carts, productMeta } = await this.doValidateCarts(reqCarts);
+
+      const attributes = { ...reqAttrs };
+
+      const paymentMethodName = paymentMethod[0].name;
+
+      const [vouchers, effects] = await this.doValidateVoucher(
+        { carts, attributes, vouchers: reqVouchers },
+        { availVoucher, unavailVoucher },
+      );
+
+      const calculation = await this.doCalculate(carts, shipment, effects);
+
+      _.assign(attributes, {
+        ...calculation,
+        shipmentCode,
+        paymentMethodCode,
+        paymentMethodName,
+      });
+
+      const data = {
+        sessionId: reqSessionId,
+        userId,
+        state: SessionState.CLOSED,
+        carts,
+        attributes,
+        vouchers,
+        effects,
+      };
+
+      // * saving data for session, order detail, and order
+      // const result =
+      await this.orderRepository.doOrder(data, productMeta);
+    } catch (error) {
+      throw error;
+    }
+  };
 
   private doValidateVoucher = async (
     data: { carts: CartAttr[]; attributes: Record<string, any>; vouchers: VoucherListAttr },
@@ -356,4 +415,28 @@ export class OrderService {
       paymentMethodCode,
     };
   };
+
+  private async doValidateCarts(reqCarts: CartAttr[]) {
+    try {
+      const ids = _.map(reqCarts, 'id');
+      const dbProducts = await this.productRepository.getProductByIds(ids);
+
+      // * return the latest information of products
+      const carts = _.map(dbProducts, (obj) => {
+        const obj1 = _.find(reqCarts, { productId: obj.id });
+
+        return {
+          productId: obj.id,
+          productCategoryId: obj.productCategoryId,
+          productName: obj.name,
+          price: +obj.price,
+          qty: obj1 ? obj1.qty : 0,
+        };
+      });
+
+      return { carts, productMeta: dbProducts };
+    } catch (error) {
+      throw error;
+    }
+  }
 }

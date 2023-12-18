@@ -35,7 +35,7 @@ export type ShipmentData = {
   isActive: boolean | null;
 };
 
-export type rule = {
+type Rule = {
   id: number | null;
   createdAt: string | null;
   updatedAt: string | null;
@@ -59,7 +59,18 @@ export type VoucherData = {
   maxValue: string;
   tnc: string;
   isActive: boolean | null;
-  rules: rule[];
+  rules: Rule[];
+};
+
+export type ProductData = {
+  id: number;
+  productCategoryId: number;
+  name: string;
+  categoryName: string | null;
+  image: string | null;
+  description: string | null;
+  price: string;
+  isActive: boolean | null;
 };
 
 export enum EffectType {

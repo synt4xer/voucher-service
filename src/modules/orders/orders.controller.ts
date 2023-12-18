@@ -15,8 +15,8 @@ class OrderController {
   getOne = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {};
   session = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
-      const body = _.get(req, 'body');
       const userId = _.get(req, 'user.id');
+      const body = _.get(req, 'body');
 
       const data = await this.orderService.doSession({ ...body, userId });
 
@@ -28,11 +28,13 @@ class OrderController {
   };
   checkout = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
+      const userId = _.get(req, 'user.id');
       const body = _.get(req, 'body');
 
-      const data = await this.orderService.doCheckout(body);
+      // const data =
+      await this.orderService.doCheckout({ ...body, userId });
 
-      res.status(200).json({ success: true, data });
+      res.status(200).json({ success: true });
     } catch (error) {
       logger.error('order.checkout.error', error);
       next(error);
