@@ -12,6 +12,7 @@ import { vouchers as voucherSchema } from '../../db/schema/voucher';
 import { inventoryDetails } from '../../db/schema/inventory-detail';
 import { CartAttr, EffectAttr, VoucherListAttr } from '../../types/sessions';
 import { inventories } from '../../db/schema/inventory';
+import { StockInsufficientException } from '../../exceptions/bad-request.exception';
 
 export class OrderRepository {
   getOrders = async (userId: number) => {
@@ -85,10 +86,21 @@ export class OrderRepository {
         tx.select().from(paymentMethod).where(eq(paymentMethod.code, attributes.paymentMethodCode)),
         tx.select().from(voucherSchema).where(inArray(voucherSchema.code, appliedVoucherCodes)),
         tx
-          .select({ inventoryId: inventories.id, productId: inventories.productId })
+          .select({
+            inventoryId: inventories.id,
+            productId: inventories.productId,
+            qtyAvail: inventories.qtyAvail,
+          })
           .from(inventories)
           .where(inArray(inventories.productId, productIds)),
       ]);
+
+      const isQuantityAvail = _.every(inventoryData, (data) => data.qtyAvail > 0);
+
+      if (!isQuantityAvail) {
+        tx.rollback();
+        throw new StockInsufficientException();
+      }
 
       // * set data order header
       const newOrder: NewOrder = {

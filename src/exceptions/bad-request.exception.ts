@@ -34,3 +34,9 @@ export class VoucherAlreadyExistException extends HttpException {
     super(400, `Voucher with code ${code} already exists!`);
   }
 }
+
+export class StockInsufficientException extends HttpException {
+  constructor() {
+    super(400, `Stock insufficient, please update your cart!`);
+  }
+}

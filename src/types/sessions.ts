@@ -26,6 +26,7 @@ export type CartAttr = {
   productId: number;
   productCategoryId: number;
   productName: string;
+  image?: string;
   qty: number;
   price: number;
 };
