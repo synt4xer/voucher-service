@@ -11,8 +11,29 @@ class OrderController {
     this.orderService = new OrderService();
   }
 
-  getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {};
-  getOne = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {};
+  getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const userId = _.get(req, 'user.id', 0);
+
+      const data = await this.orderService.getAll(+userId);
+
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error('order.getAll.error', error);
+      next(error);
+    }
+  };
+  getOne = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const id = _.get(req, 'params.id');
+
+      const data = await this.orderService.getOne(+id);
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error('order.getAll.error', error);
+      next(error);
+    }
+  };
   session = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const userId = _.get(req, 'user.id');

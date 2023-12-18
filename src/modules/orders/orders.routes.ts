@@ -6,6 +6,8 @@ import { orderValidation, sessionValidation } from './orders.validator';
 const router = express.Router();
 const controller = new OrderController();
 
+router.get('/', authMiddleware, controller.getAll);
+router.get('/:id', authMiddleware, controller.getOne);
 router.post('/session', authMiddleware, sessionValidation(), controller.session);
 router.post('/checkout', authMiddleware, orderValidation(), controller.checkout);
 

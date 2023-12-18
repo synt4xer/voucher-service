@@ -33,6 +33,10 @@ export class OrderService {
     this.paymentMethodRepository = new PaymentMethodRepository();
   }
 
+  getAll = async (userId: number) => this.orderRepository.getOrders(userId);
+
+  getOne = async (orderId: number) => this.orderRepository.getOrderDetail(orderId);
+
   doSession = async (customerSession: CustomerSession): Promise<CustomerSession> => {
     try {
       // * this function get all data from customer session, extract some needed attributes,
