@@ -1,5 +1,5 @@
 import db from '../../../db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { inventories } from '../../../db/schema/inventory';
 import { productCategories } from '../../../db/schema/product-category';
 import { NewProduct, Product, products } from '../../../db/schema/product';
@@ -29,6 +29,12 @@ export class ProductRepository {
       .from(products)
       .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
       .where(and(eq(products.id, id), eq(products.isActive, true)));
+  getProductByIds = async (ids: number[]) =>
+    db
+      .select(column)
+      .from(products)
+      .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
+      .where(and(inArray(products.id, ids), eq(products.isActive, true)));
   getProductByName = async (name: string) =>
     db
       .select()
