@@ -422,7 +422,7 @@ export class OrderService {
 
   private async doValidateCarts(reqCarts: CartAttr[]) {
     try {
-      const ids = _.map(reqCarts, 'id');
+      const ids = _.map(reqCarts, 'productId');
       const dbProducts = await this.productRepository.getProductByIds(ids);
 
       // * return the latest information of products
