@@ -1,5 +1,5 @@
 import db from '../../../db';
-import { and, eq, gt, inArray } from 'drizzle-orm';
+import { and, eq, gt, inArray, like } from 'drizzle-orm';
 import { inventories } from '../../../db/schema/inventory';
 import { productCategories } from '../../../db/schema/product-category';
 import { NewProduct, Product, products } from '../../../db/schema/product';
@@ -44,6 +44,16 @@ export class ProductRepository {
       .select()
       .from(products)
       .where(and(eq(products.name, name), eq(products.isActive, true)));
+  searchProductByName = async (name: string) =>
+    db
+      .select(column)
+      .from(products)
+      .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
+      .innerJoin(
+        inventories,
+        and(eq(inventories.productId, products.id), gt(inventories.qtyAvail, 0)),
+      )
+      .where(and(like(products.name, name), eq(products.isActive, true)));
 
   // * transactional
   createProduct = async (product: NewProduct) => {

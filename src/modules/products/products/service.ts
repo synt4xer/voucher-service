@@ -18,6 +18,14 @@ export class ProductService {
       .groupBy('categoryName')
       .map((products, category) => ({ category, products }));
   };
+  // * search
+  searchByName = async (name: string) => {
+    const data = await this.repository.searchProductByName(name);
+
+    return _.chain(data)
+      .groupBy('categoryName')
+      .map((products, category) => ({ category, products }));
+  };
   // * get one
   getOne = async (id: number) => this.repository.getProductById(id);
   // * create
