@@ -120,8 +120,10 @@ export class OrderRepository {
       const order = await tx.insert(orders).values(newOrder).returning({ id: orders.id });
 
       const newOrderDetails: NewOrderDetail[] = _.map(carts, (cart) => {
+        const total = String(cart.price * cart.qty);
+
         return {
-          total: total as string,
+          total: total,
           orderId: order[0].id,
           price: cart.price.toString(),
           productId: cart.productId,
