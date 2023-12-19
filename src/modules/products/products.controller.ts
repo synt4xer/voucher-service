@@ -11,9 +11,16 @@ class ProductController {
     this.service = new ProductService();
   }
 
-  getAll = async (_req: Request, res: Response<APIResponse>, next: NextFunction) => {
+  // list = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {};
+  getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
-      const data = await this.service.getAll();
+      const name: string = _.get(req, 'query.name', '') as string;
+      let data;
+      if (!name) {
+        data = await this.service.getAll();
+      } else {
+        data = await this.service.searchByName(name);
+      }
 
       res.status(200).json({ success: true, data });
     } catch (error) {
