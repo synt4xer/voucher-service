@@ -5,13 +5,13 @@ import { eq, inArray, sql } from 'drizzle-orm';
 import { ProductData } from '../../types/commons';
 import { sessions } from '../../db/schema/session';
 import { shipment } from '../../db/schema/shipment';
+import { inventories } from '../../db/schema/inventory';
 import { NewOrder, orders } from '../../db/schema/order';
-import { NewOrderDetail, orderDetails } from '../../db/schema/order-detail';
 import { paymentMethod } from '../../db/schema/payment-method';
 import { vouchers as voucherSchema } from '../../db/schema/voucher';
 import { inventoryDetails } from '../../db/schema/inventory-detail';
+import { NewOrderDetail, orderDetails } from '../../db/schema/order-detail';
 import { CartAttr, EffectAttr, VoucherListAttr } from '../../types/sessions';
-import { inventories } from '../../db/schema/inventory';
 import { StockInsufficientException } from '../../exceptions/bad-request.exception';
 
 export class OrderRepository {
@@ -80,19 +80,35 @@ export class OrderRepository {
         .set({ state, userId, data: JSON.stringify(data), updatedAt: DateTime.now().toString() })
         .where(eq(sessions.sessionId, sessionId!));
 
+      const getAppliedVoucher = !_.isEmpty(appliedVoucherCodes)
+        ? tx.select().from(voucherSchema).where(inArray(voucherSchema.code, appliedVoucherCodes))
+        : [];
+
+      const getInventory = tx
+        .select({
+          inventoryId: inventories.id,
+          productId: inventories.productId,
+          qtyAvail: inventories.qtyAvail,
+        })
+        .from(inventories)
+        .where(inArray(inventories.productId, productIds));
+
+      const getShipment = tx
+        .select()
+        .from(shipment)
+        .where(eq(shipment.code, attributes.shipmentCode));
+
+      const getPayment = tx
+        .select()
+        .from(paymentMethod)
+        .where(eq(paymentMethod.code, attributes.paymentMethodCode));
+
       // * get latest metadata for shipment, payment, and vouhcer
       const [shipmentMeta, paymentMeta, voucherMeta, inventoryData] = await Promise.all([
-        tx.select().from(shipment).where(eq(shipment.code, attributes.shipmentCode)),
-        tx.select().from(paymentMethod).where(eq(paymentMethod.code, attributes.paymentMethodCode)),
-        tx.select().from(voucherSchema).where(inArray(voucherSchema.code, appliedVoucherCodes)),
-        tx
-          .select({
-            inventoryId: inventories.id,
-            productId: inventories.productId,
-            qtyAvail: inventories.qtyAvail,
-          })
-          .from(inventories)
-          .where(inArray(inventories.productId, productIds)),
+        getShipment,
+        getPayment,
+        getAppliedVoucher,
+        getInventory,
       ]);
 
       const isQuantityAvail = _.every(inventoryData, (data) => data.qtyAvail > 0);

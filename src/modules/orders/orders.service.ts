@@ -11,10 +11,10 @@ import baseUtil from '../../utils/base.util';
 import { OrderRepository } from './orders.repository';
 import { SessionRepository } from '../core/sessions/repository';
 import { VoucherRepository } from '../vouchers/vouchers.repository';
+import { ProductRepository } from '../products/products/repository';
 import { ShipmentsRepository } from '../shipments/shipments.repository';
 import { PaymentMethodRepository } from '../payments/method/repository';
 import { EffectType, RuleOperator, ShipmentData, VoucherData } from '../../types/commons';
-import { ProductRepository } from '../products/products/repository';
 
 export class OrderService {
   private readonly orderRepository: OrderRepository;
