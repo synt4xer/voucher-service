@@ -33,18 +33,26 @@ export class AuthService {
       }
 
       const hashedPwd = await encrypt(user.password);
-      await this.repository.createUser({ ...user, password: hashedPwd });
+      await this.repository.createUser({ ...user, password: hashedPwd, role: 'member' });
     } catch (error) {
       throw error;
     }
   };
 
   // * Login
-  login = async (email: string, password: string) => {
+  login = async (email: string, password: string, apiKey: string) => {
     try {
       const user = await this.repository.getUser(email);
 
       if (_.isEmpty(user)) {
+        throw new WrongCredentialsException();
+      }
+
+      const role = user[0].role;
+      const isAdmin = apiKey === AppConstant.WEB_API_KEY && role == 'admin';
+      const isMember = apiKey === AppConstant.MOBILE_API_KEY && role == 'member';
+
+      if (!isAdmin && !isMember) {
         throw new WrongCredentialsException();
       }
 

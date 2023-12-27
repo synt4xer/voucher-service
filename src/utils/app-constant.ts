@@ -6,8 +6,8 @@ export const AppConstant = Object.freeze({
   SALT: Number(process.env.SALT) || 10,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRED_TIME: Number(process.env.JWT_EXPIRED_TIME) || 60,
-  WEB_API_KEY: Number(process.env.WEB_API_KEY),
-  MOBILE_API_KEY: Number(process.env.MOBILE_API_KEY),
+  WEB_API_KEY: process.env.WEB_API_KEY,
+  MOBILE_API_KEY: process.env.MOBILE_API_KEY,
 
   // DATABASE
   DB_HOST: process.env.DB_HOST,
