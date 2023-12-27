@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   index,
+  pgEnum,
   pgTable,
   serial,
   text,
@@ -10,6 +11,8 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
+
+export const roleEnum = pgEnum('role', ['admin', 'member']);
 
 export const users = pgTable(
   'user',
@@ -27,6 +30,7 @@ export const users = pgTable(
     updatedAt: timestamp('updated_at', { mode: 'string' }).notNull().defaultNow(),
     updatedBy: serial('updated_by').notNull(),
     isActive: boolean('is_active').default(true),
+    role: roleEnum('role').default('member'),
   },
   (table) => {
     return {

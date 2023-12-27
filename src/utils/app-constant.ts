@@ -6,6 +6,8 @@ export const AppConstant = Object.freeze({
   SALT: Number(process.env.SALT) || 10,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRED_TIME: Number(process.env.JWT_EXPIRED_TIME) || 60,
+  WEB_API_KEY: Number(process.env.WEB_API_KEY),
+  MOBILE_API_KEY: Number(process.env.MOBILE_API_KEY),
 
   // DATABASE
   DB_HOST: process.env.DB_HOST,
@@ -20,4 +22,5 @@ export const AppConstant = Object.freeze({
   REDIS_PASSWORD: process.env.REDIS_PASSWORD,
   REDIS_AUTH_KEY: 'AuthToken::',
   REDIS_RES_KEY: 'ResToken::',
+  // REDIS_PRODUCT_KEY: 'Product::',
 });
