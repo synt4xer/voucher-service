@@ -23,3 +23,15 @@ export class WrongResTokenException extends HttpException {
     super(401, 'Wrong refresh token');
   }
 }
+
+export class ApiKeyMissingException extends HttpException {
+  constructor() {
+    super(401, 'api key missing');
+  }
+}
+
+export class WrongApiKeyException extends HttpException {
+  constructor() {
+    super(401, 'Invalid api key');
+  }
+}

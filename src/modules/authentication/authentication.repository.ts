@@ -22,6 +22,7 @@ export class AuthenticationRepository {
         name: users.name,
         email: users.email,
         phone: users.phone,
+        role: users.role,
       })
       .from(users)
       .where(eq(users.uuid, uuid));

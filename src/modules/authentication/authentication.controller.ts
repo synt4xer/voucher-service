@@ -15,7 +15,9 @@ class AuthenticationController {
     try {
       const email = _.get(req, 'body.email');
       const password = _.get(req, 'body.password');
-      const data = await this.service.login(email, password);
+      const apiKey = _.get(req.headers, 'x-api-key') as string;
+
+      const data = await this.service.login(email, password, apiKey);
 
       res.status(200).json({ success: true, data });
     } catch (error) {

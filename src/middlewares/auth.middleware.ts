@@ -6,7 +6,9 @@ import { NextFunction, Response } from 'express';
 import { RequestWithUser } from '../types/commons';
 import { AppConstant } from '../utils/app-constant';
 import {
+  ApiKeyMissingException,
   AuthTokenMissingException,
+  WrongApiKeyException,
   WrongAuthTokenException,
 } from '../exceptions/unauthorized.exception';
 
@@ -15,10 +17,22 @@ import { AuthenticationRepository } from '../modules/authentication/authenticati
 const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFunction) => {
   const userRepository: AuthenticationRepository = new AuthenticationRepository();
   const authorization = req.header('Authorization');
+  const apiKey = req.header('x-api-key');
 
   try {
+    if (!apiKey) {
+      throw new ApiKeyMissingException();
+    }
+
     if (!authorization) {
       throw new AuthTokenMissingException();
+    }
+
+    const isAdmin = apiKey === AppConstant.WEB_API_KEY;
+    const isMember = apiKey === AppConstant.MOBILE_API_KEY;
+
+    if (!isAdmin && !isMember) {
+      throw new WrongApiKeyException();
     }
 
     const authToken = authorization!.replace('Bearer ', '');
@@ -37,8 +51,8 @@ const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFu
       throw new WrongAuthTokenException();
     }
 
-    const { id, uuid, name, email, phone } = user[0];
-    req.user = { id, uuid, name, email, phone };
+    const { id, uuid, name, email, phone, role } = user[0];
+    req.user = { id, uuid, name, email, phone, role: role! };
     next();
   } catch (error) {
     logger.error('authMiddleware.error', error);
