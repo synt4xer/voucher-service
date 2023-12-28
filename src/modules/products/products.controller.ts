@@ -11,7 +11,16 @@ class ProductController {
     this.service = new ProductService();
   }
 
-  // list = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {};
+  list = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const name: string = _.get(req, 'query.name', null) as string;
+      const data = await this.service.productLists(name);
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error('product.list.error', error);
+      next(error);
+    }
+  };
   getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const name: string = _.get(req, 'query.name', '') as string;

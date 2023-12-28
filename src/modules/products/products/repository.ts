@@ -17,6 +17,21 @@ const column = {
 };
 
 export class ProductRepository {
+  productLists = async (name?: string) => {
+    if (!name) {
+      return db
+        .select(column)
+        .from(products)
+        .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
+        .where(eq(products.isActive, true));
+    }
+
+    return db
+      .select(column)
+      .from(products)
+      .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
+      .where(and(like(products.name, name), eq(products.isActive, true)));
+  };
   getProducts = async () =>
     db
       .select(column)

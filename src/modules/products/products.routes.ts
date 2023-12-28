@@ -20,6 +20,6 @@ router.post('/', authMiddleware, productController.create);
 router.get('/:id', authMiddleware, productController.getOne);
 router.patch('/:id', authMiddleware, productController.update);
 router.delete('/:id', authMiddleware, productController.delete);
-// router.get('/list', authMiddleware, productController.list);
+router.get('/list', authMiddleware, productController.list);
 
 export default router;
