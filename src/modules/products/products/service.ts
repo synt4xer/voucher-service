@@ -10,6 +10,8 @@ export class ProductService {
     this.repository = new ProductRepository();
   }
 
+  // * lists
+  productLists = async (name?: string) => this.repository.productLists(name);
   // * read
   getAll = async () => {
     const data = await this.repository.getProducts();
