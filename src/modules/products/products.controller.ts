@@ -51,7 +51,9 @@ class ProductController {
   create = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const body = _.get(req, 'body');
-      const data = await this.service.create({ ...body });
+      const reqFile = _.get(req, 'files');
+
+      const data = await this.service.create({ ...body }, reqFile);
 
       res.status(201).json({ success: true, data });
     } catch (error) {
@@ -63,8 +65,9 @@ class ProductController {
     try {
       const id = _.get(req, 'params.id');
       const body = _.get(req, 'body');
+      const reqFile = _.get(req, 'files');
 
-      const data = await this.service.update({ ...body }, +id);
+      const data = await this.service.update({ ...body }, reqFile, +id);
 
       res.status(200).json({ success: true, data });
     } catch (error) {

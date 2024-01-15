@@ -23,4 +23,7 @@ export const AppConstant = Object.freeze({
   REDIS_AUTH_KEY: 'AuthToken::',
   REDIS_RES_KEY: 'ResToken::',
   // REDIS_PRODUCT_KEY: 'Product::',
+
+  //IMGBB
+  IMGBB_API_V1_KEY: process.env.IMGBB_API_V1_KEY,
 });
