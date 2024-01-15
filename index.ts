@@ -1,10 +1,11 @@
-import express from 'express';
-import helmet from 'helmet';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import express from 'express';
 import compression from 'compression';
-import errorMiddleware from './src/middlewares/error.middleware';
+import cookieParser from 'cookie-parser';
+import fileUpload from 'express-fileupload';
 import { httpLogger } from './src/utils/logger';
+import errorMiddleware from './src/middlewares/error.middleware';
 
 require('dotenv').config();
 
@@ -18,6 +19,11 @@ app.use(cors({ credentials: true }));
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
+app.use(
+  fileUpload({
+    limits: { fileSize: 2 * 1024 * 1024 },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 
 // Use HTTP logger
