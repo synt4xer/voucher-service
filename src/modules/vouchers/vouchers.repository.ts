@@ -3,7 +3,7 @@ import db from '../../db';
 import { DateTime } from 'luxon';
 import { rules } from '../../db/schema/rules';
 import { NodeType } from '../../types/commons';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, inArray, like, sql } from 'drizzle-orm';
 import { RulesRequest } from '../../types/interfaces';
 import { NewVoucher, Voucher, vouchers } from '../../db/schema/voucher';
 
@@ -22,6 +22,21 @@ const column = {
 };
 
 export class VoucherRepository {
+  voucherLists = async (code?: string) => {
+    if (!code) {
+      return db
+        .select(column)
+        .from(vouchers)
+        .orderBy(desc(vouchers.isActive), desc(vouchers.activeFrom), desc(vouchers.activeTo));
+    }
+
+    return db
+      .select(column)
+      .from(vouchers)
+      .where(ilike(vouchers.code, `%${code}%`))
+      .orderBy(desc(vouchers.isActive), desc(vouchers.activeFrom), desc(vouchers.activeTo));
+  };
+
   getVouchers = async () => {
     const getVouchersData = await db
       .select()

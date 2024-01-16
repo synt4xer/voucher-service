@@ -11,6 +11,17 @@ class VoucherController {
     this.service = new VoucherService();
   }
 
+  list = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const code: string = _.get(req, 'query.code', null) as string;
+      const data = await this.service.list(code);
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error('voucher.list.error', error);
+      next(error);
+    }
+  };
+
   getAll = async (_req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const data = await this.service.getAll();
