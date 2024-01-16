@@ -11,6 +11,16 @@ class OrderController {
     this.orderService = new OrderService();
   }
 
+  list = async (_req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const data = await this.orderService.list();
+
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error('order.list.error', error);
+      next(error);
+    }
+  };
   getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const userId = _.get(req, 'user.id', 0);

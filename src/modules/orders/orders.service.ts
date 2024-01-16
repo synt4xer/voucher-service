@@ -33,6 +33,8 @@ export class OrderService {
     this.paymentMethodRepository = new PaymentMethodRepository();
   }
 
+  list = async () => this.orderRepository.allOrders();
+
   getAll = async (userId: number) => this.orderRepository.getOrders(userId);
 
   getOne = async (orderId: number) => this.orderRepository.getOrderDetail(orderId);
