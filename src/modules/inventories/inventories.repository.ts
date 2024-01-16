@@ -1,10 +1,22 @@
 import db from '../../db';
 import { and, eq } from 'drizzle-orm';
+import { products } from '../../db/schema/product';
 import { RequestUpdateInventory } from '../../types/interfaces';
 import { Inventory, inventories } from '../../db/schema/inventory';
 
 export class InventoryRepository {
-  getInventories = async () => db.select().from(inventories);
+  getInventories = async () =>
+    db
+      .select({
+        id: inventories.id,
+        productId: inventories.productId,
+        productName: products.name,
+        qtyAvail: inventories.qtyAvail,
+        qtySettled: inventories.qtySettled,
+        qtyTotal: inventories.qtyTotal,
+      })
+      .from(inventories)
+      .leftJoin(products, eq(products.id, inventories.productId));
   getInventoryById = async (id: number) =>
     db
       .select()
