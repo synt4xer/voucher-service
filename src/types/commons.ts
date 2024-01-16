@@ -18,6 +18,7 @@ export interface APIResponse<T = any> {
 
 export interface DataStoredInToken {
   _uuid: string;
+  role: 'member' | 'admin';
 }
 
 export interface RequestWithUser extends Request {

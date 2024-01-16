@@ -8,9 +8,10 @@ const secret = AppConstant.JWT_SECRET!;
 const expiresIn = AppConstant.JWT_EXPIRED_TIME * OneMinuteInSeconds;
 const refreshExpiresIn = 2 * 24 * 60 * OneMinuteInSeconds; // * 2 days
 
-export const createJwtToken = (uuid: string, expiresIn: number) => {
+export const createJwtToken = (uuid: string, role: 'admin' | 'member', expiresIn: number) => {
   const data: DataStoredInToken = {
     _uuid: uuid,
+    role,
   };
 
   return jwt.sign(data, secret, { expiresIn });
@@ -18,8 +19,8 @@ export const createJwtToken = (uuid: string, expiresIn: number) => {
 
 export const createToken = (user: User) => {
   return {
-    token: createJwtToken(user.uuid!, expiresIn),
-    refreshToken: createJwtToken(user.uuid!, refreshExpiresIn),
+    token: createJwtToken(user.uuid!, user.role!, expiresIn),
+    refreshToken: createJwtToken(user.uuid!, user.role!, refreshExpiresIn),
   };
 };
 
