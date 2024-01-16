@@ -10,6 +10,8 @@ export class VoucherService {
     this.repository = new VoucherRepository();
   }
 
+  // * lists
+  list = async (code?: string) => this.repository.voucherLists(code);
   // * read
   getAll = async () => this.repository.getVouchers();
   // * get one

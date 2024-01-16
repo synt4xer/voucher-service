@@ -1,6 +1,6 @@
 import db from '../../../db';
-import { and, eq, gt, ilike, inArray } from 'drizzle-orm';
 import { inventories } from '../../../db/schema/inventory';
+import { and, desc, eq, gt, ilike, inArray } from 'drizzle-orm';
 import { productCategories } from '../../../db/schema/product-category';
 import { NewProduct, Product, products } from '../../../db/schema/product';
 
@@ -23,14 +23,15 @@ export class ProductRepository {
         .select(column)
         .from(products)
         .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
-        .where(eq(products.isActive, true));
+        .orderBy(desc(products.isActive));
     }
 
     return db
       .select(column)
       .from(products)
       .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
-      .where(and(ilike(products.name, `%${name}%`), eq(products.isActive, true)));
+      .where(and(ilike(products.name, `%${name}%`)))
+      .orderBy(desc(products.isActive));
   };
   getProducts = async () =>
     db
