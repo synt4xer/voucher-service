@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import db from '../../db';
 import { DateTime } from 'luxon';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { desc, eq, inArray, sql } from 'drizzle-orm';
 import { ProductData } from '../../types/commons';
 import { sessions } from '../../db/schema/session';
 import { shipment } from '../../db/schema/shipment';
@@ -15,6 +15,9 @@ import { CartAttr, EffectAttr, VoucherListAttr } from '../../types/sessions';
 import { StockInsufficientException } from '../../exceptions/bad-request.exception';
 
 export class OrderRepository {
+  allOrders = async () => {
+    return await db.select().from(orders).orderBy(desc(orders.id));
+  };
   getOrders = async (userId: number) => {
     const orderData = await db.select().from(orders).where(eq(orders.userId, userId));
 
