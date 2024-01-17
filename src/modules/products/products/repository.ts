@@ -23,15 +23,15 @@ export class ProductRepository {
         .select(column)
         .from(products)
         .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
-        .orderBy(desc(products.isActive));
+        .orderBy(desc(products.isActive), products.name);
     }
 
     return db
       .select(column)
       .from(products)
       .leftJoin(productCategories, eq(productCategories.id, products.productCategoryId))
-      .where(and(ilike(products.name, `%${name}%`)))
-      .orderBy(desc(products.isActive));
+      .where(ilike(products.name, `%${name}%`))
+      .orderBy(desc(products.isActive), products.name);
   };
   getProducts = async () =>
     db
