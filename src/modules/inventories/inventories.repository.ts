@@ -1,12 +1,27 @@
 import db from '../../db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike } from 'drizzle-orm';
 import { products } from '../../db/schema/product';
 import { RequestUpdateInventory } from '../../types/interfaces';
 import { Inventory, inventories } from '../../db/schema/inventory';
 
 export class InventoryRepository {
-  getInventories = async () =>
-    db
+  getInventories = async (name?: string) => {
+    if (!name) {
+      return db
+        .select({
+          id: inventories.id,
+          productId: inventories.productId,
+          productName: products.name,
+          qtyAvail: inventories.qtyAvail,
+          qtySettled: inventories.qtySettled,
+          qtyTotal: inventories.qtyTotal,
+        })
+        .from(inventories)
+        .leftJoin(products, eq(products.id, inventories.productId))
+        .orderBy(products.name);
+    }
+
+    return db
       .select({
         id: inventories.id,
         productId: inventories.productId,
@@ -16,7 +31,10 @@ export class InventoryRepository {
         qtyTotal: inventories.qtyTotal,
       })
       .from(inventories)
-      .leftJoin(products, eq(products.id, inventories.productId));
+      .leftJoin(products, eq(products.id, inventories.productId))
+      .where(ilike(products.name, `%${name}%`))
+      .orderBy(products.name);
+  };
   getInventoryById = async (id: number) =>
     db
       .select()

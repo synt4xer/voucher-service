@@ -11,7 +11,7 @@ export class InventoryService {
   }
 
   // * read
-  getAll = async () => this.repository.getInventories();
+  getAll = async (name?: string) => this.repository.getInventories(name);
   // * get one
   getOneByProductId = async (productId: number) =>
     this.repository.getInventoryByProductId(productId);
