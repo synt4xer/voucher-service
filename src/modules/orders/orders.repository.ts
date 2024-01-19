@@ -32,10 +32,12 @@ export class OrderRepository {
 
     const groupedDetail = _.groupBy(getOrderDetail, 'orderId');
 
-    return _.map(orderData, (order) => ({
-      ...order,
-      details: groupedDetail[order.id] || [],
-    }));
+    return _.chain(orderData)
+      .map((order) => ({
+        ...order,
+        details: groupedDetail[order.id] || [],
+      }))
+      .orderBy(['id'], ['desc']);
   };
   getOrderDetail = async (orderId: number) => {
     const [order] = await db.select().from(orders).where(eq(orders.id, orderId));
