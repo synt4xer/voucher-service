@@ -88,11 +88,11 @@ export class AuthService {
 
       // * if refresh token is valid
       // * if not valid, it will throw error from jwt.verify() method.
-      const { _uuid, role } = verifyToken(resToken);
+      const { _uuid, name, role } = verifyToken(resToken);
 
       const [token, refreshToken] = await Promise.all([
-        createJwtToken(_uuid, role, expiresIn),
-        createJwtToken(_uuid, role, refreshExpiresIn),
+        createJwtToken(_uuid, name, role, expiresIn),
+        createJwtToken(_uuid, name, role, refreshExpiresIn),
       ]);
 
       // * setup redis for new key, and delete old key
