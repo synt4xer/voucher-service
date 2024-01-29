@@ -40,7 +40,7 @@ export class ProductService {
         throw new ProductAlreadyExistsException(product.name);
       }
 
-      const imageUrl = image == null ? null : await uploadImage(image);
+      const imageUrl = image == null || image.size == 0 ? null : await uploadImage(image);
 
       return this.repository.createProduct({ ...product, image: imageUrl });
     } catch (error) {
@@ -49,7 +49,7 @@ export class ProductService {
   };
   // * update
   update = async (product: Product, image: any | null, id: number) => {
-    const imageUrl = image == null ? null : await uploadImage(image);
+    const imageUrl = image == null || image.size == 0 ? null : await uploadImage(image);
     return this.repository.updateProduct(id, { ...product, image: imageUrl });
   };
   // * delete
