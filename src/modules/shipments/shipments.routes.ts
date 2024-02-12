@@ -7,6 +7,7 @@ const router = express.Router();
 const shipmentsController = new ShipmentsController();
 
 // * payment method
+router.get('/list', authMiddleware, shipmentsController.list);
 router.get('/', authMiddleware, shipmentsController.getAll);
 router.post('/', authMiddleware, shipmentsController.create);
 router.get('/:code', authMiddleware, shipmentsController.getOne);

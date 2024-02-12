@@ -8,6 +8,7 @@ const productController = new ProductController();
 const categoryController = new ProductCategoriesController();
 
 // * product categories
+router.get('/categories/list', authMiddleware, categoryController.list);
 router.get('/categories', authMiddleware, categoryController.getAll);
 router.post('/categories', authMiddleware, categoryController.create);
 router.get('/categories/:id', authMiddleware, categoryController.getOne);

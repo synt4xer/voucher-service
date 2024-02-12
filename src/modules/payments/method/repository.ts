@@ -1,8 +1,28 @@
 import db from '../../../db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike } from 'drizzle-orm';
 import { NewPaymentMethod, PaymentMethod, paymentMethod } from '../../../db/schema/payment-method';
 
 export class PaymentMethodRepository {
+  getPaymentMethodsList = async (code?: string) => {
+    if (!code) {
+      return db
+        .select({
+          code: paymentMethod.code,
+          name: paymentMethod.name,
+          isActive: paymentMethod.isActive,
+        })
+        .from(paymentMethod)
+        .where(ilike(paymentMethod.code, `%${code}%`));
+    }
+
+    return db
+      .select({
+        code: paymentMethod.code,
+        name: paymentMethod.name,
+        isActive: paymentMethod.isActive,
+      })
+      .from(paymentMethod);
+  };
   getPaymentMethods = async () =>
     db
       .select({

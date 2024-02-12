@@ -11,7 +11,19 @@ class ProductCategoriesController {
     this.service = new ProductCategoryService();
   }
 
-  getAll = async (_req: Request, res: Response<APIResponse>, next: NextFunction) => {
+  list = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
+    try {
+      const name: string = _.get(req, 'query.name', null) as string;
+      const data = await this.service.list(name);
+
+      res.status(200).json({ success: true, data });
+    } catch (error) {
+      logger.error('product.categories.list.error', error);
+      next(error);
+    }
+  };
+
+  getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       const data = await this.service.getAll();
 

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike } from 'drizzle-orm';
 import db from '../../../db';
 import {
   NewProductCategory,
@@ -7,6 +7,16 @@ import {
 } from '../../../db/schema/product-category';
 
 export class ProductCategoryRepository {
+  getProductCategoriesList = async (name?: string) => {
+    if (!name) {
+      return db
+        .select()
+        .from(productCategories)
+        .where(ilike(productCategories.name, `%${name}%`));
+    }
+
+    return db.select().from(productCategories);
+  };
   getProductCategories = async () =>
     db.select().from(productCategories).where(eq(productCategories.isActive, true));
   getProductCategoryById = async (id: number) =>
