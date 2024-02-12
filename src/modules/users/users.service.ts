@@ -11,7 +11,7 @@ export class UsersService {
     this.repository = new UsersRepository();
   }
 
-  getAll = async () => this.repository.getUsers();
+  getAll = async (name?: string) => this.repository.getUsers(name);
   getOne = async (id: number) => this.repository.getUsersById(id);
   getByName = async (name: string) => this.repository.getUsersByEmail(name);
   searchByName = async (name: string) => this.repository.searchUsersByName(name);
