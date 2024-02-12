@@ -11,9 +11,10 @@ class UsersController {
     this.service = new UsersService();
   }
 
-  getAll = async (_req: Request, res: Response<APIResponse>, next: NextFunction) => {
+  getAll = async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
-      const data = await this.service.getAll();
+      const name: string = _.get(req, 'query.name', null) as string;
+      const data = await this.service.getAll(name);
 
       res.status(200).json({ success: true, data });
     } catch (error) {
