@@ -17,7 +17,7 @@ const column = {
 
 export class UsersRepository {
   getUsers = async (name?: string) => {
-    if (!name) {
+    if (name) {
       return db
         .select(column)
         .from(users)

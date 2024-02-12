@@ -8,7 +8,7 @@ import {
 
 export class ProductCategoryRepository {
   getProductCategoriesList = async (name?: string) => {
-    if (!name) {
+    if (name) {
       return db
         .select()
         .from(productCategories)

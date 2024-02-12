@@ -4,7 +4,7 @@ import { NewPaymentMethod, PaymentMethod, paymentMethod } from '../../../db/sche
 
 export class PaymentMethodRepository {
   getPaymentMethodsList = async (code?: string) => {
-    if (!code) {
+    if (code) {
       return db
         .select({
           code: paymentMethod.code,
