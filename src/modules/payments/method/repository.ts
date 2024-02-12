@@ -1,11 +1,10 @@
-import _ from 'lodash';
 import db from '../../../db';
 import { and, eq, ilike } from 'drizzle-orm';
 import { NewPaymentMethod, PaymentMethod, paymentMethod } from '../../../db/schema/payment-method';
 
 export class PaymentMethodRepository {
   getPaymentMethodsList = async (code?: string) => {
-    if (_.isNull(code)) {
+    if (!code) {
       return db
         .select({
           code: paymentMethod.code,

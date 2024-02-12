@@ -5,7 +5,7 @@ import { NewShipment, Shipment, shipment } from '../../db/schema/shipment';
 
 export class ShipmentsRepository {
   getShipmentsList = async (code?: string) => {
-    if (!_.isNull(code)) {
+    if (!code) {
       return db
         .select({
           code: shipment.code,

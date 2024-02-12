@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { and, eq, ilike } from 'drizzle-orm';
 import db from '../../../db';
 import {
@@ -9,7 +8,7 @@ import {
 
 export class ProductCategoryRepository {
   getProductCategoriesList = async (name?: string) => {
-    if (!_.isNull(name)) {
+    if (!name) {
       return db
         .select()
         .from(productCategories)

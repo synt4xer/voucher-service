@@ -1,6 +1,7 @@
 import db from '../../db';
 import { and, eq, ilike } from 'drizzle-orm';
 import { NewUser, User, users } from '../../db/schema/users';
+import _ from 'lodash';
 
 const column = {
   id: users.id,
@@ -15,7 +16,17 @@ const column = {
 };
 
 export class UsersRepository {
-  getUsers = async () => db.select(column).from(users).where(eq(users.isActive, true));
+  getUsers = async (name?: string) => {
+    if (!name) {
+      return db
+        .select(column)
+        .from(users)
+        .where(ilike(users.name, `%${name}%`));
+    }
+
+    return db.select(column).from(users);
+  };
+  // getUsers = async () => db.select(column).from(users).where(eq(users.isActive, true));
   getUsersById = async (id: number) =>
     db
       .select(column)
