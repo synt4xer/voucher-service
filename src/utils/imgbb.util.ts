@@ -7,7 +7,7 @@ const BASE_URL = `https://api.imgbb.com/1/upload?key=${AppConstant.IMGBB_API_V1_
 export const uploadImage = async (imageFile: any) => {
   const formData = new FormData();
 
-  const { data, name, md5, mimetype } = imageFile.image;
+  const { data, name, md5, mimetype } = imageFile;
 
   const imageBlob = new Blob([data], { type: mimetype });
 
