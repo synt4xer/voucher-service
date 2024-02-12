@@ -11,6 +11,7 @@ export class ProductCategoryService {
   }
 
   // * read
+  list = async (name?: string) => this.repository.getProductCategoriesList(name);
   getAll = async () => this.repository.getProductCategories();
   // * get one
   getOne = async (id: number) => this.repository.getProductCategoryById(id);
