@@ -11,6 +11,7 @@ export class PaymentMethodService {
   }
 
   // * read
+  list = async (code?: string) => this.repository.getPaymentMethodsList(code);
   getAll = async () => this.repository.getPaymentMethods();
   // * get one
   getOne = async (code: string) => this.repository.getPaymentMethodByCode(code);
