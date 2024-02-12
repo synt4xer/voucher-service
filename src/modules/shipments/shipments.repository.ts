@@ -1,8 +1,32 @@
+import _ from 'lodash';
 import db from '../../db';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, ilike } from 'drizzle-orm';
 import { NewShipment, Shipment, shipment } from '../../db/schema/shipment';
 
 export class ShipmentsRepository {
+  getShipmentsList = async (code?: string) => {
+    if (!_.isNull(code)) {
+      return db
+        .select({
+          code: shipment.code,
+          name: shipment.name,
+          amount: shipment.amount,
+          isActive: shipment.isActive,
+        })
+        .from(shipment)
+        .where(ilike(shipment.code, `%${code}%`));
+    }
+
+    return db
+      .select({
+        code: shipment.code,
+        name: shipment.name,
+        amount: shipment.amount,
+        isActive: shipment.isActive,
+      })
+      .from(shipment);
+  };
+
   getShipments = async () =>
     db
       .select({

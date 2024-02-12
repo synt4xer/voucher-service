@@ -11,6 +11,7 @@ export class ShipmentService {
   }
 
   // * read
+  list = async (code?: string) => this.repository.getShipmentsList(code);
   getAll = async () => this.repository.getShipments();
   // * get one
   getOne = async (code: string) => this.repository.getShipmentByCode(code);
