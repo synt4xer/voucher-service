@@ -87,38 +87,30 @@ export class OrderService {
         };
       }
 
-      // * get from the request
+      // * get attributes from the request
       const attributes = { ...reqAttrs };
 
+      // * setup payment method
       const paymentMethodName = _.isEmpty(paymentMethod) ? undefined : paymentMethod[0].name;
 
-      // * first calculation before voucher effect
-      // const firstCalculation = await this.doCalculate(reqCarts, shipment, []);
-
-      // * assign calculated amount to attributes
-      // _.assign(attributes, {
-      //   ...firstCalculation,
-      //   shipmentCode,
-      //   paymentMethodCode,
-      //   paymentMethodName,
-      // });
-
+      // * validating vouchers, chain forwarding algorithm working here
       const [vouchers, effects] = await this.doValidateVoucher(
         { carts: reqCarts, attributes, vouchers: reqVouchers },
         { availVoucher, unavailVoucher },
       );
 
-      // * second calculate
-      const secondCalculation = await this.doCalculate(reqCarts, shipment, effects);
+      // * calculation
+      const calculation = await this.doCalculate(reqCarts, shipment, effects);
 
       // * assign calculated amount to attributes
       _.assign(attributes, {
-        ...secondCalculation,
+        ...calculation,
         shipmentCode,
         paymentMethodCode,
         paymentMethodName,
       });
 
+      // * define data for session
       const data = {
         sessionId: reqSessionId,
         userId,
@@ -129,6 +121,7 @@ export class OrderService {
         effects,
       };
 
+      // * insert if new, update if exist
       const newSessions = await this.sessionRepository.upsertSession(data);
 
       return {
@@ -162,17 +155,22 @@ export class OrderService {
       // * checking carts with current product condition
       const { carts, productMeta } = await this.doValidateCarts(reqCarts);
 
+      // * get attributes from the request
       const attributes = { ...reqAttrs };
 
+      // * setup payment method
       const paymentMethodName = paymentMethod[0].name;
 
+      // * validating vouchers, chain forwarding algorithm working here
       const [vouchers, effects] = await this.doValidateVoucher(
         { carts, attributes, vouchers: reqVouchers },
         { availVoucher, unavailVoucher },
       );
 
+      // * calculation
       const calculation = await this.doCalculate(carts, shipment, effects);
 
+      // * assign calculated amount to attributes
       _.assign(attributes, {
         ...calculation,
         shipmentCode,
@@ -180,6 +178,7 @@ export class OrderService {
         paymentMethodName,
       });
 
+      // * define data for checking out the cart
       const data = {
         sessionId: reqSessionId,
         userId,
@@ -191,7 +190,6 @@ export class OrderService {
       };
 
       // * saving data for session, order detail, and order
-      // const result =
       await this.orderRepository.doOrder(data, productMeta);
     } catch (error) {
       throw error;

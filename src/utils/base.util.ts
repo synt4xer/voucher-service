@@ -8,6 +8,7 @@ class BaseUtil {
     ruleValue: string,
     valueType: string,
   ) {
+    // * define the function based on RuleOperator enum
     const operators: Record<RuleOperator, (a: any, b: any) => boolean> = {
       [RuleOperator.EQ]: (a, b) => _.isEqual(String(a), String(b)),
       [RuleOperator.GT]: (a, b) => _.gt(Number(a), Number(b)),
@@ -22,13 +23,15 @@ class BaseUtil {
         _.every(a, (value: any) => this.checkCondition(RuleOperator.EQ, value, b, valueType)),
     };
 
+    // * create a function based on operator parameter
     const operator = operators[operatorFn];
 
+    // * if the function created with existed RuleOperator from parameter
     if (operator) {
       return operator(payloadValue, ruleValue);
     }
 
-    // * else condition
+    // * if RuleOperator from parameter is not exist
     return false;
   }
 
