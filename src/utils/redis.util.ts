@@ -10,6 +10,8 @@ class RedisUtil {
       host: AppConstant.REDIS_HOST,
       port: AppConstant.REDIS_PORT,
       password: AppConstant.REDIS_PASSWORD,
+      connectTimeout: 10000, // 10 seconds
+      maxRetriesPerRequest: 3, // Number of times to retry a request before emitting an error
     });
     logger.info('Connected to redis!');
   }
