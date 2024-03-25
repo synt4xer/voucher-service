@@ -255,7 +255,7 @@ export class OrderService {
           : _.map(carts, (cart) => _.get(cart, rule.key.split('.')[1]));
 
         const operatorFn = _.isArray(payloadValue)
-          ? RuleOperator.EV
+          ? RuleOperator.SM
           : baseUtil.stringToEnum(RuleOperator, rule.operatorFn);
 
         return baseUtil.checkCondition(operatorFn!, payloadValue, rule.value, rule.type);
@@ -330,10 +330,6 @@ export class OrderService {
       .differenceWith(unavailable, (apply, unavail) => apply.voucherCode === unavail.voucherCode)
       .uniqBy('voucherCode')
       .value();
-    // const available = _.chain(reqAvailable)
-    //   .differenceWith(unavailable, (avail, unavail) => avail.voucherCode === unavail.voucherCode)
-    //   .uniqBy('voucherCode')
-    //   .value();
 
     return [
       {
